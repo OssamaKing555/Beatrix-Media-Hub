@@ -1,0 +1,229 @@
+{
+  "consultationTypes": [
+    {
+      "id": "startup-consulting",
+      "title": "Startup Consulting",
+      "description": "Comprehensive guidance for startups at every stage of growth",
+      "icon": "Rocket",
+      "duration": "60 minutes",
+      "price": 200,
+      "currency": "USD",
+      "experts": ["expert-001", "expert-002"],
+      "topics": [
+        "Business model validation",
+        "Market entry strategy",
+        "Funding and investment",
+        "Team building and hiring",
+        "Product development roadmap"
+      ],
+      "popular": true
+    },
+    {
+      "id": "legal-consulting",
+      "title": "Legal Consulting",
+      "description": "Legal advice for business formation, contracts, and compliance",
+      "icon": "Scale",
+      "duration": "45 minutes",
+      "price": 150,
+      "currency": "USD",
+      "experts": ["expert-001"],
+      "topics": [
+        "Business registration and licensing",
+        "Contract review and drafting",
+        "Intellectual property protection",
+        "Employment law compliance",
+        "Regulatory compliance"
+      ],
+      "popular": false
+    },
+    {
+      "id": "tax-consulting",
+      "title": "Tax Consulting",
+      "description": "Tax planning and optimization for businesses and individuals",
+      "icon": "Calculator",
+      "duration": "60 minutes",
+      "price": 180,
+      "currency": "USD",
+      "experts": ["expert-003"],
+      "topics": [
+        "Tax planning and optimization",
+        "Business tax compliance",
+        "International tax considerations",
+        "Tax-efficient business structures",
+        "Audit preparation and support"
+      ],
+      "popular": false
+    },
+    {
+      "id": "accounting-consulting",
+      "title": "Accounting Consulting",
+      "description": "Financial management and accounting best practices",
+      "icon": "BookOpen",
+      "duration": "45 minutes",
+      "price": 120,
+      "currency": "USD",
+      "experts": ["expert-004"],
+      "topics": [
+        "Financial statement preparation",
+        "Bookkeeping setup and optimization",
+        "Cash flow management",
+        "Financial reporting systems",
+        "Budget planning and forecasting"
+      ],
+      "popular": false
+    },
+    {
+      "id": "business-strategy",
+      "title": "Business Strategy",
+      "description": "Strategic planning and business development consulting",
+      "icon": "Target",
+      "duration": "90 minutes",
+      "price": 300,
+      "currency": "USD",
+      "experts": ["expert-001", "expert-005"],
+      "topics": [
+        "Strategic planning and execution",
+        "Market analysis and positioning",
+        "Competitive strategy development",
+        "Growth and scaling strategies",
+        "Performance optimization"
+      ],
+      "popular": true
+    }
+  ],
+  "experts": [
+    {
+      "id": "expert-001",
+      "name": "Dr. Karim El-Sayed",
+      "title": "Business Strategy & Legal Expert",
+      "avatar": "/avatars/karim.jpg",
+      "credentials": ["PhD Business Law", "MBA", "Certified Business Consultant"],
+      "specialties": ["startup-consulting", "legal-consulting", "business-strategy"],
+      "experience": "15+ years",
+      "rating": 4.9,
+      "consultations": 150,
+      "hourlyRate": 150,
+      "bio": "Dr. Karim is a seasoned business consultant with expertise in startup strategy, legal compliance, and business development. He has helped over 200 startups scale successfully.",
+      "languages": ["English", "Arabic"],
+      "availability": {
+        "monday": ["09:00", "17:00"],
+        "tuesday": ["09:00", "17:00"],
+        "wednesday": ["09:00", "17:00"],
+        "thursday": ["09:00", "17:00"],
+        "friday": ["09:00", "15:00"]
+      }
+    },
+    {
+      "id": "expert-002",
+      "name": "Sarah Johnson",
+      "title": "Startup Growth Specialist",
+      "avatar": "/avatars/sarah.jpg",
+      "credentials": ["MBA", "Certified Startup Coach", "Former Tech Executive"],
+      "specialties": ["startup-consulting"],
+      "experience": "12+ years",
+      "rating": 4.8,
+      "consultations": 120,
+      "hourlyRate": 200,
+      "bio": "Sarah specializes in helping tech startups scale from idea to market leader. She has been part of 3 successful exits and advises on growth strategies.",
+      "languages": ["English"],
+      "availability": {
+        "monday": ["10:00", "18:00"],
+        "tuesday": ["10:00", "18:00"],
+        "wednesday": ["10:00", "18:00"],
+        "thursday": ["10:00", "18:00"],
+        "friday": ["10:00", "16:00"]
+      }
+    },
+    {
+      "id": "expert-003",
+      "name": "Ahmed Hassan",
+      "title": "Tax & Financial Advisor",
+      "avatar": "/avatars/ahmed.jpg",
+      "credentials": ["CPA", "MSc Taxation", "Certified Financial Planner"],
+      "specialties": ["tax-consulting"],
+      "experience": "18+ years",
+      "rating": 4.7,
+      "consultations": 200,
+      "hourlyRate": 180,
+      "bio": "Ahmed is a certified public accountant with extensive experience in tax planning and financial optimization for businesses of all sizes.",
+      "languages": ["English", "Arabic"],
+      "availability": {
+        "monday": ["08:00", "16:00"],
+        "tuesday": ["08:00", "16:00"],
+        "wednesday": ["08:00", "16:00"],
+        "thursday": ["08:00", "16:00"],
+        "friday": ["08:00", "14:00"]
+      }
+    },
+    {
+      "id": "expert-004",
+      "name": "Fatima Zahra",
+      "title": "Accounting & Finance Expert",
+      "avatar": "/avatars/fatima.jpg",
+      "credentials": ["CMA", "MBA Finance", "Certified Management Accountant"],
+      "specialties": ["accounting-consulting"],
+      "experience": "14+ years",
+      "rating": 4.6,
+      "consultations": 180,
+      "hourlyRate": 120,
+      "bio": "Fatima specializes in financial management, accounting systems, and helping businesses optimize their financial operations.",
+      "languages": ["English", "Arabic", "French"],
+      "availability": {
+        "monday": ["09:00", "17:00"],
+        "tuesday": ["09:00", "17:00"],
+        "wednesday": ["09:00", "17:00"],
+        "thursday": ["09:00", "17:00"],
+        "friday": ["09:00", "15:00"]
+      }
+    },
+    {
+      "id": "expert-005",
+      "name": "Omar Khalil",
+      "title": "Business Strategy Consultant",
+      "avatar": "/avatars/omar.jpg",
+      "credentials": ["MBA Strategy", "Certified Business Coach", "Former Fortune 500 Executive"],
+      "specialties": ["business-strategy"],
+      "experience": "20+ years",
+      "rating": 4.9,
+      "consultations": 250,
+      "hourlyRate": 300,
+      "bio": "Omar has helped Fortune 500 companies and startups alike develop winning strategies. His expertise spans multiple industries and markets.",
+      "languages": ["English", "Arabic"],
+      "availability": {
+        "monday": ["10:00", "18:00"],
+        "tuesday": ["10:00", "18:00"],
+        "wednesday": ["10:00", "18:00"],
+        "thursday": ["10:00", "18:00"],
+        "friday": ["10:00", "16:00"]
+      }
+    }
+  ],
+  "bookings": [
+    {
+      "id": "booking-001",
+      "clientId": "startup-001",
+      "expertId": "expert-001",
+      "consultationType": "startup-consulting",
+      "date": "2024-12-20T14:00:00Z",
+      "duration": 60,
+      "status": "confirmed",
+      "notes": "First-time startup founder looking for guidance on business model validation",
+      "price": 200,
+      "currency": "USD",
+      "createdAt": "2024-12-15T10:00:00Z"
+    },
+    {
+      "id": "booking-002",
+      "clientId": "client-001",
+      "expertId": "expert-005",
+      "consultationType": "business-strategy",
+      "date": "2024-12-22T10:00:00Z",
+      "duration": 90,
+      "status": "pending",
+      "notes": "Established company looking to expand into new markets",
+      "price": 300,
+      "currency": "USD",
+      "createdAt": "2024-12-18T15:30:00Z"
+    }
+  ]
+} 

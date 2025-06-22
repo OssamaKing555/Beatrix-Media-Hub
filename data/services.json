@@ -1,0 +1,251 @@
+{
+  "services": [
+    {
+      "id": "service-001",
+      "title": "Brand Identity Design",
+      "category": "design",
+      "description": "Complete brand identity packages including logo design, color palette, typography, and brand guidelines.",
+      "features": [
+        "Primary and secondary logo variations",
+        "Color palette and typography system",
+        "Brand guidelines document",
+        "Social media templates",
+        "Business card and letterhead designs"
+      ],
+      "pricing": {
+        "starter": {
+          "price": 2500,
+          "currency": "USD",
+          "delivery": "2 weeks",
+          "revisions": 2
+        },
+        "professional": {
+          "price": 5000,
+          "currency": "USD",
+          "delivery": "3 weeks",
+          "revisions": 3
+        },
+        "premium": {
+          "price": 10000,
+          "currency": "USD",
+          "delivery": "4 weeks",
+          "revisions": "unlimited"
+        }
+      },
+      "image": "/images/services/brand-identity.jpg",
+      "icon": "Palette",
+      "popular": true
+    },
+    {
+      "id": "service-002",
+      "title": "Video Production",
+      "category": "production",
+      "description": "High-quality video production services from concept to final delivery.",
+      "features": [
+        "Script development and storyboarding",
+        "Professional filming and cinematography",
+        "Post-production and editing",
+        "Motion graphics and animations",
+        "Color grading and sound design"
+      ],
+      "pricing": {
+        "starter": {
+          "price": 5000,
+          "currency": "USD",
+          "delivery": "3 weeks",
+          "revisions": 2
+        },
+        "professional": {
+          "price": 15000,
+          "currency": "USD",
+          "delivery": "4 weeks",
+          "revisions": 3
+        },
+        "premium": {
+          "price": 30000,
+          "currency": "USD",
+          "delivery": "6 weeks",
+          "revisions": "unlimited"
+        }
+      },
+      "image": "/images/services/video-production.jpg",
+      "icon": "Video",
+      "popular": true
+    },
+    {
+      "id": "service-003",
+      "title": "Digital Advertising",
+      "category": "advertising",
+      "description": "Comprehensive digital advertising campaigns across all major platforms.",
+      "features": [
+        "Campaign strategy and planning",
+        "Creative design and copywriting",
+        "Platform setup and optimization",
+        "Performance tracking and analytics",
+        "Monthly reporting and optimization"
+      ],
+      "pricing": {
+        "starter": {
+          "price": 2000,
+          "currency": "USD",
+          "delivery": "1 week",
+          "duration": "1 month"
+        },
+        "professional": {
+          "price": 5000,
+          "currency": "USD",
+          "delivery": "1 week",
+          "duration": "3 months"
+        },
+        "premium": {
+          "price": 10000,
+          "currency": "USD",
+          "delivery": "1 week",
+          "duration": "6 months"
+        }
+      },
+      "image": "/images/services/digital-advertising.jpg",
+      "icon": "TrendingUp",
+      "popular": false
+    },
+    {
+      "id": "service-004",
+      "title": "AI-Powered Content Creation",
+      "category": "ai_tools",
+      "description": "Leverage cutting-edge AI technology for content creation and optimization.",
+      "features": [
+        "AI-generated content and copywriting",
+        "Image and video generation",
+        "Content optimization and SEO",
+        "Automated social media posts",
+        "Performance analytics and insights"
+      ],
+      "pricing": {
+        "starter": {
+          "price": 500,
+          "currency": "USD",
+          "delivery": "1 week",
+          "credits": "1000"
+        },
+        "professional": {
+          "price": 1500,
+          "currency": "USD",
+          "delivery": "1 week",
+          "credits": "5000"
+        },
+        "premium": {
+          "price": 3000,
+          "currency": "USD",
+          "delivery": "1 week",
+          "credits": "unlimited"
+        }
+      },
+      "image": "/images/services/ai-content.jpg",
+      "icon": "Brain",
+      "popular": true
+    },
+    {
+      "id": "service-005",
+      "title": "Business Consulting",
+      "category": "consulting",
+      "description": "Strategic business consulting for startups and established companies.",
+      "features": [
+        "Business strategy development",
+        "Market research and analysis",
+        "Financial planning and modeling",
+        "Operational optimization",
+        "Growth strategy and scaling"
+      ],
+      "pricing": {
+        "hourly": {
+          "price": 150,
+          "currency": "USD",
+          "minimum": "5 hours"
+        },
+        "monthly": {
+          "price": 5000,
+          "currency": "USD",
+          "hours": "40 hours/month"
+        },
+        "project": {
+          "price": 15000,
+          "currency": "USD",
+          "duration": "3 months"
+        }
+      },
+      "image": "/images/services/business-consulting.jpg",
+      "icon": "Briefcase",
+      "popular": false
+    },
+    {
+      "id": "service-006",
+      "title": "Event Production",
+      "category": "production",
+      "description": "Full-service event production from concept to execution.",
+      "features": [
+        "Event concept and planning",
+        "Venue selection and management",
+        "Technical production and AV",
+        "Branding and visual design",
+        "On-site coordination and management"
+      ],
+      "pricing": {
+        "starter": {
+          "price": 10000,
+          "currency": "USD",
+          "capacity": "up to 100 people"
+        },
+        "professional": {
+          "price": 25000,
+          "currency": "USD",
+          "capacity": "up to 500 people"
+        },
+        "premium": {
+          "price": 50000,
+          "currency": "USD",
+          "capacity": "1000+ people"
+        }
+      },
+      "image": "/images/services/event-production.jpg",
+      "icon": "Calendar",
+      "popular": false
+    }
+  ],
+  "categories": [
+    {
+      "id": "design",
+      "name": "Design Services",
+      "description": "Creative design solutions for brands and businesses",
+      "icon": "Palette",
+      "services": ["service-001"]
+    },
+    {
+      "id": "production",
+      "name": "Production Services",
+      "description": "High-quality video and event production",
+      "icon": "Video",
+      "services": ["service-002", "service-006"]
+    },
+    {
+      "id": "advertising",
+      "name": "Advertising",
+      "description": "Digital advertising and marketing campaigns",
+      "icon": "TrendingUp",
+      "services": ["service-003"]
+    },
+    {
+      "id": "ai_tools",
+      "name": "AI Tools",
+      "description": "AI-powered content creation and optimization",
+      "icon": "Brain",
+      "services": ["service-004"]
+    },
+    {
+      "id": "consulting",
+      "name": "Consulting",
+      "description": "Strategic business consulting and advisory",
+      "icon": "Briefcase",
+      "services": ["service-005"]
+    }
+  ]
+} 

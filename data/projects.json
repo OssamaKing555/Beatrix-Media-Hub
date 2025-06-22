@@ -1,0 +1,180 @@
+{
+  "projects": [
+    {
+      "id": "project-001",
+      "title": "TechStart Egypt Brand Identity",
+      "clientId": "client-001",
+      "clientName": "TechStart Egypt",
+      "type": "branding",
+      "status": "in_progress",
+      "priority": "high",
+      "budget": 15000,
+      "currency": "USD",
+      "startDate": "2024-12-01T00:00:00Z",
+      "deadline": "2024-12-25T00:00:00Z",
+      "description": "Complete brand identity redesign for TechStart Egypt, including logo, color palette, typography, and brand guidelines.",
+      "requirements": [
+        "Modern and tech-focused design",
+        "Scalable logo system",
+        "Brand guidelines document",
+        "Social media templates"
+      ],
+      "assignedSupervisor": "supervisor-001",
+      "assignedFreelancers": ["freelancer-001"],
+      "tasks": [
+        {
+          "id": "task-001",
+          "title": "Logo Design",
+          "assignedTo": "freelancer-001",
+          "status": "in_progress",
+          "deadline": "2024-12-10T00:00:00Z",
+          "description": "Create primary and secondary logo variations",
+          "progress": 75
+        },
+        {
+          "id": "task-002",
+          "title": "Brand Guidelines",
+          "assignedTo": "freelancer-001",
+          "status": "pending",
+          "deadline": "2024-12-20T00:00:00Z",
+          "description": "Develop comprehensive brand guidelines document",
+          "progress": 0
+        }
+      ],
+      "files": [
+        {
+          "id": "file-001",
+          "name": "brand_brief.pdf",
+          "url": "/files/project-001/brand_brief.pdf",
+          "uploadedBy": "client-001",
+          "uploadedAt": "2024-12-01T10:00:00Z"
+        }
+      ],
+      "messages": [
+        {
+          "id": "msg-001",
+          "from": "client-001",
+          "to": "supervisor-001",
+          "content": "Looking forward to seeing the initial concepts!",
+          "timestamp": "2024-12-01T10:30:00Z"
+        }
+      ],
+      "createdAt": "2024-12-01T00:00:00Z",
+      "updatedAt": "2024-12-19T10:00:00Z"
+    },
+    {
+      "id": "project-002",
+      "title": "InnovateTech Product Launch Video",
+      "clientId": "startup-001",
+      "clientName": "InnovateTech",
+      "type": "video_production",
+      "status": "planning",
+      "priority": "medium",
+      "budget": 25000,
+      "currency": "USD",
+      "startDate": "2024-12-20T00:00:00Z",
+      "deadline": "2025-01-15T00:00:00Z",
+      "description": "High-quality product launch video for InnovateTech's new AI platform, including motion graphics and voiceover.",
+      "requirements": [
+        "60-second product demo video",
+        "Motion graphics and animations",
+        "Professional voiceover",
+        "Social media cutdowns"
+      ],
+      "assignedSupervisor": "supervisor-001",
+      "assignedFreelancers": ["producer-001"],
+      "tasks": [
+        {
+          "id": "task-003",
+          "title": "Script Development",
+          "assignedTo": "producer-001",
+          "status": "pending",
+          "deadline": "2024-12-25T00:00:00Z",
+          "description": "Write and approve video script",
+          "progress": 0
+        }
+      ],
+      "files": [],
+      "messages": [],
+      "createdAt": "2024-12-15T00:00:00Z",
+      "updatedAt": "2024-12-19T09:00:00Z"
+    },
+    {
+      "id": "project-003",
+      "title": "Media Distribution Campaign",
+      "clientId": "client-001",
+      "clientName": "TechStart Egypt",
+      "type": "advertising",
+      "status": "completed",
+      "priority": "high",
+      "budget": 8000,
+      "currency": "USD",
+      "startDate": "2024-11-01T00:00:00Z",
+      "deadline": "2024-11-30T00:00:00Z",
+      "description": "Digital advertising campaign across multiple platforms for TechStart Egypt's new mobile app.",
+      "requirements": [
+        "Facebook and Instagram ads",
+        "Google Ads campaign",
+        "Performance tracking",
+        "Monthly report"
+      ],
+      "assignedSupervisor": "supervisor-001",
+      "assignedFreelancers": ["distributor-001"],
+      "tasks": [
+        {
+          "id": "task-004",
+          "title": "Campaign Setup",
+          "assignedTo": "distributor-001",
+          "status": "completed",
+          "deadline": "2024-11-05T00:00:00Z",
+          "description": "Set up all advertising campaigns",
+          "progress": 100
+        }
+      ],
+      "files": [
+        {
+          "id": "file-002",
+          "name": "campaign_report.pdf",
+          "url": "/files/project-003/campaign_report.pdf",
+          "uploadedBy": "distributor-001",
+          "uploadedAt": "2024-12-01T00:00:00Z"
+        }
+      ],
+      "messages": [],
+      "createdAt": "2024-11-01T00:00:00Z",
+      "updatedAt": "2024-12-01T00:00:00Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-001",
+      "projectId": "project-001",
+      "title": "Logo Design",
+      "description": "Create primary and secondary logo variations for TechStart Egypt",
+      "assignedTo": "freelancer-001",
+      "status": "in_progress",
+      "priority": "high",
+      "deadline": "2024-12-10T00:00:00Z",
+      "progress": 75,
+      "files": [
+        {
+          "id": "file-003",
+          "name": "logo_concept_1.ai",
+          "url": "/files/task-001/logo_concept_1.ai",
+          "uploadedBy": "freelancer-001",
+          "uploadedAt": "2024-12-05T14:30:00Z"
+        }
+      ],
+      "comments": [
+        {
+          "id": "comment-001",
+          "from": "supervisor-001",
+          "content": "Great direction! Let's refine the typography.",
+          "timestamp": "2024-12-05T15:00:00Z"
+        }
+      ],
+      "createdAt": "2024-12-01T00:00:00Z",
+      "updatedAt": "2024-12-19T10:00:00Z"
+    }
+  ]
+} 

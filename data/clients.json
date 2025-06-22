@@ -1,0 +1,237 @@
+{
+  "clients": [
+    {
+      "id": "client-001",
+      "name": "TechStart Egypt",
+      "logo": "/logos/techstart-egypt.svg",
+      "industry": "Technology",
+      "size": "Startup",
+      "location": "Cairo, Egypt",
+      "website": "https://techstartegypt.com",
+      "description": "Innovative tech startup focused on AI-powered solutions for the Egyptian market.",
+      "projects": ["project-001", "project-003"],
+      "testimonial": {
+        "text": "Beatrix Media Hub transformed our brand identity completely. Their team's creativity and attention to detail exceeded our expectations.",
+        "author": "Mohamed Ali",
+        "position": "CEO & Founder",
+        "rating": 5
+      },
+      "caseStudy": {
+        "title": "TechStart Egypt Brand Transformation",
+        "summary": "Complete brand identity redesign for a growing tech startup",
+        "challenge": "TechStart Egypt needed a modern, scalable brand identity that would grow with their business and appeal to both local and international markets.",
+        "solution": "Designed a comprehensive brand system including logo, color palette, typography, and brand guidelines that reflected their innovative approach to technology.",
+        "results": [
+          "300% increase in brand recognition",
+          "50% improvement in website conversion rates",
+          "Successfully launched in 3 new markets"
+        ],
+        "duration": "4 weeks",
+        "budget": "$15,000"
+      },
+      "featured": true,
+      "verified": true,
+      "createdAt": "2024-03-01T00:00:00Z"
+    },
+    {
+      "id": "client-002",
+      "name": "Vodafone Egypt",
+      "logo": "/logos/vodafone-egypt.svg",
+      "industry": "Telecommunications",
+      "size": "Enterprise",
+      "location": "Cairo, Egypt",
+      "website": "https://vodafone.com.eg",
+      "description": "Leading telecommunications provider in Egypt with millions of customers.",
+      "projects": ["project-004"],
+      "testimonial": {
+        "text": "Beatrix's digital advertising campaigns consistently deliver exceptional ROI. Their strategic approach and creative execution are unmatched.",
+        "author": "Ahmed Hassan",
+        "position": "Marketing Director",
+        "rating": 5
+      },
+      "caseStudy": {
+        "title": "Vodafone 5G Launch Campaign",
+        "summary": "Multi-platform digital campaign for 5G network launch",
+        "challenge": "Launch Vodafone's 5G network with maximum impact across all digital channels while maintaining brand consistency.",
+        "solution": "Developed an integrated digital campaign including social media, influencer partnerships, and performance marketing across multiple platforms.",
+        "results": [
+          "2.5M+ campaign impressions",
+          "150% increase in 5G inquiries",
+          "25% boost in brand engagement"
+        ],
+        "duration": "3 months",
+        "budget": "$50,000"
+      },
+      "featured": true,
+      "verified": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": "client-003",
+      "name": "Nike Egypt",
+      "logo": "/logos/nike-egypt.svg",
+      "industry": "Sports & Fashion",
+      "size": "Enterprise",
+      "location": "Cairo, Egypt",
+      "website": "https://nike.com/egypt",
+      "description": "Global sports brand with strong presence in the Egyptian market.",
+      "projects": ["project-005"],
+      "testimonial": {
+        "text": "The street culture activation was phenomenal. Beatrix captured the essence of our brand and connected with our audience authentically.",
+        "author": "Sarah Johnson",
+        "position": "Brand Manager",
+        "rating": 5
+      },
+      "caseStudy": {
+        "title": "Nike Street Culture Activation",
+        "summary": "Street culture activation featuring local artists and athletes",
+        "challenge": "Create an authentic street culture experience that resonates with Nike's target audience in Egypt while showcasing local talent.",
+        "solution": "Designed and executed a multi-day street culture activation featuring local artists, athletes, and influencers in key urban locations.",
+        "results": [
+          "10,000+ event attendees",
+          "5M+ social media reach",
+          "40% increase in local brand engagement"
+        ],
+        "duration": "2 weeks",
+        "budget": "$75,000"
+      },
+      "featured": true,
+      "verified": true,
+      "createdAt": "2024-02-01T00:00:00Z"
+    },
+    {
+      "id": "client-004",
+      "name": "Coca-Cola Egypt",
+      "logo": "/logos/coca-cola-egypt.svg",
+      "industry": "Beverages",
+      "size": "Enterprise",
+      "location": "Cairo, Egypt",
+      "website": "https://coca-cola.com.eg",
+      "description": "Global beverage company with extensive operations in Egypt.",
+      "projects": ["project-006"],
+      "testimonial": {
+        "text": "Beatrix's event production capabilities are world-class. They delivered an unforgettable music festival that exceeded all expectations.",
+        "author": "Omar Khalil",
+        "position": "Events Director",
+        "rating": 5
+      },
+      "caseStudy": {
+        "title": "Coca-Cola Music Festival",
+        "summary": "Annual music festival with Coca-Cola branding and activations",
+        "challenge": "Organize a large-scale music festival that showcases Coca-Cola's brand while providing an exceptional experience for attendees.",
+        "solution": "Produced a comprehensive music festival including stage design, branding, artist coordination, and on-site activations.",
+        "results": [
+          "15,000+ festival attendees",
+          "8M+ social media impressions",
+          "90% positive brand sentiment"
+        ],
+        "duration": "6 months",
+        "budget": "$200,000"
+      },
+      "featured": true,
+      "verified": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "client-005",
+      "name": "Samsung Egypt",
+      "logo": "/logos/samsung-egypt.svg",
+      "industry": "Electronics",
+      "size": "Enterprise",
+      "location": "Cairo, Egypt",
+      "website": "https://samsung.com/egypt",
+      "description": "Global electronics manufacturer with strong market presence in Egypt.",
+      "projects": ["project-007"],
+      "testimonial": {
+        "text": "The Galaxy launch event was executed flawlessly. Beatrix's attention to detail and creative vision made it a memorable experience.",
+        "author": "Layla Ahmed",
+        "position": "Product Marketing Manager",
+        "rating": 5
+      },
+      "caseStudy": {
+        "title": "Samsung Galaxy Launch Event",
+        "summary": "Exclusive product launch event with influencer partnerships",
+        "challenge": "Create an exclusive, high-impact launch event for Samsung's latest Galaxy smartphone that generates buzz and drives sales.",
+        "solution": "Designed and executed an exclusive launch event featuring product demonstrations, influencer partnerships, and immersive brand experiences.",
+        "results": [
+          "500+ exclusive attendees",
+          "2M+ social media reach",
+          "30% increase in pre-orders"
+        ],
+        "duration": "3 months",
+        "budget": "$100,000"
+      },
+      "featured": false,
+      "verified": true,
+      "createdAt": "2024-04-01T00:00:00Z"
+    },
+    {
+      "id": "client-006",
+      "name": "McDonald's Egypt",
+      "logo": "/logos/mcdonalds-egypt.svg",
+      "industry": "Food & Beverage",
+      "size": "Enterprise",
+      "location": "Cairo, Egypt",
+      "website": "https://mcdonalds.com.eg",
+      "description": "Global fast-food chain with extensive network across Egypt.",
+      "projects": ["project-008"],
+      "testimonial": {
+        "text": "Beatrix's social media campaign for our Happy Meal promotion was incredibly successful. They understand our audience perfectly.",
+        "author": "Fatima Zahra",
+        "position": "Digital Marketing Manager",
+        "rating": 5
+      },
+      "caseStudy": {
+        "title": "McDonald's Happy Meal Campaign",
+        "summary": "Social media campaign featuring family content and toy collections",
+        "challenge": "Increase Happy Meal sales through engaging social media content that appeals to families and children.",
+        "solution": "Developed a comprehensive social media campaign featuring family-friendly content, toy showcases, and interactive elements.",
+        "results": [
+          "3M+ campaign reach",
+          "200% increase in Happy Meal sales",
+          "50% boost in social media engagement"
+        ],
+        "duration": "2 months",
+        "budget": "$25,000"
+      },
+      "featured": false,
+      "verified": true,
+      "createdAt": "2024-05-01T00:00:00Z"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "testimonial-001",
+      "clientId": "client-001",
+      "text": "Beatrix Media Hub transformed our brand identity completely. Their team's creativity and attention to detail exceeded our expectations.",
+      "author": "Mohamed Ali",
+      "position": "CEO & Founder",
+      "company": "TechStart Egypt",
+      "rating": 5,
+      "project": "Brand Identity Design",
+      "featured": true
+    },
+    {
+      "id": "testimonial-002",
+      "clientId": "client-002",
+      "text": "Beatrix's digital advertising campaigns consistently deliver exceptional ROI. Their strategic approach and creative execution are unmatched.",
+      "author": "Ahmed Hassan",
+      "position": "Marketing Director",
+      "company": "Vodafone Egypt",
+      "rating": 5,
+      "project": "Digital Advertising",
+      "featured": true
+    },
+    {
+      "id": "testimonial-003",
+      "clientId": "client-003",
+      "text": "The street culture activation was phenomenal. Beatrix captured the essence of our brand and connected with our audience authentically.",
+      "author": "Sarah Johnson",
+      "position": "Brand Manager",
+      "company": "Nike Egypt",
+      "rating": 5,
+      "project": "Brand Activation",
+      "featured": true
+    }
+  ]
+} 
