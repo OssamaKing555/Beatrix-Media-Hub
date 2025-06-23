@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Account is deactivated' }, { status: 403 });
     }
 
-    // Create session
+    // Create session (for logging only, not required for authentication)
     const sessionId = SessionManager.createSession(user.id, user.role);
     
     // Generate JWT token
@@ -183,6 +183,7 @@ export async function POST(request: NextRequest) {
       path: '/'
     });
 
+    // (Optional) Set session-id cookie for logging only
     response.cookies.set('session-id', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
