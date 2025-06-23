@@ -23,15 +23,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
     }
 
-    // Validate session
-    const session = SessionManager.validateSession(sessionId);
-    if (!session.valid || session.userId !== payload.userId) {
-      SecurityLogger.logSecurityEvent('csrf_session_mismatch', { ip, userAgent, userId: payload.userId }, 'high');
-      return NextResponse.json({ error: 'Session validation failed' }, { status: 401 });
+    // (Optional) Validate session only for logging, not for authentication
+    let session = { valid: true };
+    if (sessionId) {
+      session = SessionManager.validateSession(sessionId);
     }
 
     // Generate CSRF token
-    const csrfToken = TokenManager.generateCSRFToken(payload.userId, sessionId);
+    const csrfToken = TokenManager.generateCSRFToken(payload.userId, sessionId || '');
 
     // Log token generation
     SecurityLogger.logSecurityEvent('csrf_token_generated', {
