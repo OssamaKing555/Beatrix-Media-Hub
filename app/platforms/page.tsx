@@ -100,19 +100,39 @@ export default function PlatformsPage() {
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
 
+  // Debug logging
+  console.log('Platforms Page Debug:', { user, isAuthenticated });
+
   useEffect(() => {
+    console.log('Platforms Page useEffect:', { user, isAuthenticated });
     if (!isAuthenticated) {
+      console.log('Redirecting to login - not authenticated');
       router.push('/login');
     }
   }, [isAuthenticated, router]);
 
   if (!isAuthenticated || !user) {
-    return null;
+    console.log('Platforms Page - showing loading, auth state:', { isAuthenticated, user });
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-purple-900/20 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="text-white mt-4">Loading...</p>
+          <p className="text-white/60 mt-2">Auth: {isAuthenticated ? 'Yes' : 'No'}</p>
+          <p className="text-white/60">User: {user ? 'Yes' : 'No'}</p>
+        </div>
+      </div>
+    );
   }
 
-  const accessiblePlatforms = platforms.filter(platform => 
-    canAccessPlatform(user.role, platform.id)
-  );
+  // Super admin can access all platforms
+  const accessiblePlatforms = user.role === 'super_admin' 
+    ? platforms 
+    : platforms.filter(platform => 
+        platform.roles.includes(user.role)
+      );
+
+  console.log('Platforms Page - rendering with platforms:', accessiblePlatforms.length);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-900/20 to-black">
@@ -198,32 +218,32 @@ export default function PlatformsPage() {
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4">
               <MessageSquare className="h-8 w-8 text-white" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">24/7</div>
-            <div className="text-white/60">Support Available</div>
+            <h3 className="text-2xl font-bold text-white mb-2">150+</h3>
+            <p className="text-white/60">Active Projects</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <FileText className="h-8 w-8 text-white" />
+              <Users className="h-8 w-8 text-white" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">500+</div>
-            <div className="text-white/60">Active Projects</div>
+            <h3 className="text-2xl font-bold text-white mb-2">500+</h3>
+            <p className="text-white/60">Team Members</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Users className="h-8 w-8 text-white" />
+              <FileText className="h-8 w-8 text-white" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">100+</div>
-            <div className="text-white/60">Team Members</div>
+            <h3 className="text-2xl font-bold text-white mb-2">1000+</h3>
+            <p className="text-white/60">Files Shared</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-4">
               <BarChart3 className="h-8 w-8 text-white" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">99.9%</div>
-            <div className="text-white/60">Uptime</div>
+            <h3 className="text-2xl font-bold text-white mb-2">98%</h3>
+            <p className="text-white/60">Success Rate</p>
           </div>
         </motion.div>
 

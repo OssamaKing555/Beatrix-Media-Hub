@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Shield, 
@@ -32,6 +32,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { SecureBadge } from '@/components/ui/secure-badge';
 import { SecurityAlert } from '@/components/ui/security-alert';
+import { useAuth, hasPermission } from '@/lib/auth';
+import siteConfig from '@/data/siteConfig.json';
+import { toast } from 'sonner';
 
 interface SecurityEvent {
   id: string;
@@ -56,16 +59,57 @@ interface SecurityStats {
   lastUpdated: string;
 }
 
+const initialEvents: SecurityEvent[] = [
+    {
+        id: '1',
+        type: 'failed_login',
+        severity: 'medium',
+        message: 'Multiple failed login attempts detected from IP 192.168.1.100',
+        timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+        ip: '192.168.1.100',
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        userId: 'user123',
+        resolved: false,
+    },
+    {
+        id: '2',
+        type: 'csrf_violation',
+        severity: 'high',
+        message: 'CSRF token validation failed for form submission',
+        timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+        ip: '203.0.113.45',
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        resolved: true,
+    },
+];
+
+const eventTypes = ['login', 'logout', 'failed_login', 'csrf_violation', 'rate_limit', 'suspicious_activity', 'system_alert'];
+const severities = ['low', 'medium', 'high', 'critical'];
+
+function generateMockEvent(): SecurityEvent {
+    return {
+        id: Math.random().toString(36).substr(2, 9),
+        type: eventTypes[Math.floor(Math.random() * eventTypes.length)] as SecurityEvent['type'],
+        severity: severities[Math.floor(Math.random() * severities.length)] as SecurityEvent['severity'],
+        message: 'A new security event has been detected.',
+        timestamp: new Date().toISOString(),
+        ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        resolved: false
+    };
+}
+
 export default function SecurityDashboard() {
-  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
+  const { user } = useAuth();
+  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>(initialEvents);
   const [stats, setStats] = useState<SecurityStats>({
     totalEvents: 0,
     criticalEvents: 0,
     activeThreats: 0,
     blockedAttacks: 0,
-    csrfTokensGenerated: 0,
-    sessionsActive: 0,
-    rateLimitHits: 0,
+    csrfTokensGenerated: 1247,
+    sessionsActive: 23,
+    rateLimitHits: 156,
     lastUpdated: new Date().toISOString(),
   });
   const [filterType, setFilterType] = useState<string>('all');
@@ -77,77 +121,30 @@ export default function SecurityDashboard() {
     message: string;
   } | null>(null);
 
-  // Generate mock security events
   useEffect(() => {
-    const mockEvents: SecurityEvent[] = [
-      {
-        id: '1',
-        type: 'failed_login',
-        severity: 'medium',
-        message: 'Multiple failed login attempts detected from IP 192.168.1.100',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-        ip: '192.168.1.100',
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        userId: 'user123',
-        resolved: false,
-      },
-      {
-        id: '2',
-        type: 'csrf_violation',
-        severity: 'high',
-        message: 'CSRF token validation failed for form submission',
-        timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-        ip: '203.0.113.45',
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-        resolved: true,
-      },
-      {
-        id: '3',
-        type: 'rate_limit',
-        severity: 'low',
-        message: 'Rate limit exceeded for API endpoint /api/auth/login',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        ip: '198.51.100.23',
-        userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
-        resolved: false,
-      },
-      {
-        id: '4',
-        type: 'suspicious_activity',
-        severity: 'critical',
-        message: 'Unusual access pattern detected from multiple IP addresses',
-        timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-        ip: '10.0.0.1',
-        userAgent: 'Automated Bot',
-        resolved: false,
-      },
-      {
-        id: '5',
-        type: 'login',
-        severity: 'low',
-        message: 'Successful login from new device',
-        timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-        ip: '172.16.0.50',
-        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
-        userId: 'admin',
-        resolved: true,
-      },
-    ];
+    if (!user || !hasPermission(user.role, 'super_admin')) return;
 
-    setSecurityEvents(mockEvents);
-    
-    // Update stats
-    setStats({
-      totalEvents: mockEvents.length,
-      criticalEvents: mockEvents.filter(e => e.severity === 'critical').length,
-      activeThreats: mockEvents.filter(e => !e.resolved && e.severity === 'high').length,
-      blockedAttacks: mockEvents.filter(e => e.type === 'csrf_violation' || e.type === 'rate_limit').length,
-      csrfTokensGenerated: 1247,
-      sessionsActive: 23,
-      rateLimitHits: 156,
+    const interval = setInterval(() => {
+        const newEvent = generateMockEvent();
+        setSecurityEvents(prev => [newEvent, ...prev]);
+        toast.warning(`New ${newEvent.severity} security event detected!`, {
+            description: newEvent.message
+        });
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+  
+  useEffect(() => {
+    setStats(prev => ({
+      ...prev,
+      totalEvents: securityEvents.length,
+      criticalEvents: securityEvents.filter(e => e.severity === 'critical').length,
+      activeThreats: securityEvents.filter(e => !e.resolved && e.severity === 'high').length,
+      blockedAttacks: securityEvents.filter(e => e.type === 'csrf_violation' || e.type === 'rate_limit').length,
       lastUpdated: new Date().toISOString(),
-    });
-  }, []);
+    }));
+  }, [securityEvents]);
 
   const handleResolveEvent = (eventId: string) => {
     setSecurityEvents(prev => 
@@ -155,36 +152,23 @@ export default function SecurityDashboard() {
         event.id === eventId ? { ...event, resolved: true } : event
       )
     );
-    
-    setSecurityAlert({
-      type: 'success',
-      title: 'Event Resolved',
-      message: 'Security event has been marked as resolved.'
-    });
+    toast.success('Event marked as resolved.');
   };
 
   const handleRefreshData = () => {
-    setSecurityAlert({
-      type: 'info',
-      title: 'Refreshing Data',
-      message: 'Security data is being refreshed...'
-    });
-    
+    toast.info('Refreshing security data...');
     setTimeout(() => {
-      setSecurityAlert({
-        type: 'success',
-        title: 'Data Updated',
-        message: 'Security dashboard has been updated with latest information.'
-      });
+        setSecurityEvents(prev => [generateMockEvent(), ...prev.slice(0, 19)]);
+        toast.success('Security dashboard updated.');
     }, 1000);
   };
-
-  const filteredEvents = securityEvents.filter(event => {
+  
+  const filteredEvents = useMemo(() => securityEvents.filter(event => {
     if (filterType !== 'all' && event.type !== filterType) return false;
     if (filterSeverity !== 'all' && event.severity !== filterSeverity) return false;
     if (!showResolved && event.resolved) return false;
     return true;
-  });
+  }), [securityEvents, filterType, filterSeverity, showResolved]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -208,6 +192,15 @@ export default function SecurityDashboard() {
       default: return <Activity className="h-4 w-4" />;
     }
   };
+
+  if (!user || !hasPermission(user.role, 'supervisor')) {
+      return (
+          <div className="text-center py-12">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+              <p className="text-gray-600">You don't have permission to access the security dashboard.</p>
+          </div>
+      );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-900/20 to-black p-6">

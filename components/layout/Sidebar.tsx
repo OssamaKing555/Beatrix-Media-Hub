@@ -6,11 +6,13 @@ import { cn } from '@/lib/utils'
 import { logout } from '@/lib/auth'
 
 const navigation = [
-  { name: 'Dashboard', href: '/admin/dashboard', icon: '📊' },
+  { name: 'Dashboard', href: '/admin', icon: '📊' },
   { name: 'Projects', href: '/admin/projects', icon: '📁' },
   { name: 'Services', href: '/admin/services', icon: '⚙️' },
   { name: 'Clients', href: '/admin/clients', icon: '👥' },
+  { name: 'Visual Editor', href: '/admin/visual-editor', icon: '🎨' },
   { name: 'Settings', href: '/admin/settings', icon: '🔧' },
+  { name: 'Security', href: '/admin/security', icon: '🔒' },
 ]
 
 export default function Sidebar() {

@@ -1,457 +1,592 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useAuth, hasPermission } from '@/lib/auth';
-import { getTasksByUser, getProjects } from '@/lib/data';
+import { useAuth, canAccessPlatform } from '@/lib/auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import { 
   Briefcase, 
-  Upload, 
-  MessageSquare, 
-  ShoppingCart, 
   Clock, 
-  CheckCircle,
-  AlertCircle,
-  FileText,
-  Image,
-  Video,
-  Music,
-  Send,
-  Plus,
-  Search,
-  Filter,
-  Download,
-  Eye,
-  Edit,
-  Trash2,
-  Star,
-  DollarSign,
-  Users,
-  Calendar,
+  CheckCircle, 
+  DollarSign, 
+  Star, 
   Bell,
-  Mail
+  User,
+  FileText,
+  Calendar,
+  TrendingUp,
+  Award,
+  MessageSquare,
+  Upload,
+  Edit,
+  Eye,
+  Shield
 } from 'lucide-react';
 
-export default function FreelancersDashboard() {
+interface Job {
+  id: string;
+  title: string;
+  client: string;
+  description: string;
+  budget: string;
+  duration: string;
+  skills: string[];
+  status: 'open' | 'applied' | 'in_progress' | 'completed';
+  postedDate: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  client: string;
+  progress: number;
+  deadline: string;
+  status: 'active' | 'review' | 'completed';
+  budget: string;
+  tasks: Task[];
+}
+
+interface Task {
+  id: string;
+  title: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  dueDate: string;
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  timestamp: string;
+  read: boolean;
+}
+
+const mockJobs: Job[] = [
+  {
+    id: 'job-1',
+    title: 'Brand Identity Design for Tech Startup',
+    client: 'TechFlow Solutions',
+    description: 'Create a complete brand identity including logo, color palette, and brand guidelines for a new fintech startup.',
+    budget: '$2,500 - $4,000',
+    duration: '2-3 weeks',
+    skills: ['Logo Design', 'Brand Identity', 'Adobe Illustrator'],
+    status: 'open',
+    postedDate: '2024-12-19T10:00:00Z'
+  },
+  {
+    id: 'job-2',
+    title: 'Social Media Content Creation',
+    client: 'Fashion Retail Co.',
+    description: 'Create engaging social media content for Instagram and TikTok campaigns.',
+    budget: '$800 - $1,200',
+    duration: '1 week',
+    skills: ['Content Creation', 'Social Media', 'Video Editing'],
+    status: 'applied',
+    postedDate: '2024-12-18T14:30:00Z'
+  },
+  {
+    id: 'job-3',
+    title: 'Website Redesign',
+    client: 'Restaurant Chain',
+    description: 'Modernize the website design with improved UX and mobile responsiveness.',
+    budget: '$3,000 - $5,000',
+    duration: '3-4 weeks',
+    skills: ['Web Design', 'UX/UI', 'Figma'],
+    status: 'open',
+    postedDate: '2024-12-17T09:15:00Z'
+  }
+];
+
+const mockProjects: Project[] = [
+  {
+    id: 'proj-1',
+    title: 'E-commerce Website Development',
+    client: 'Fashion Retail Co.',
+    progress: 75,
+    deadline: '2024-12-25',
+    status: 'active',
+    budget: '$4,500',
+    tasks: [
+      { id: 'task-1', title: 'Homepage Design', status: 'completed', dueDate: '2024-12-20' },
+      { id: 'task-2', title: 'Product Catalog', status: 'in_progress', dueDate: '2024-12-22' },
+      { id: 'task-3', title: 'Payment Integration', status: 'pending', dueDate: '2024-12-25' }
+    ]
+  },
+  {
+    id: 'proj-2',
+    title: 'Marketing Campaign Design',
+    client: 'TechStart Egypt',
+    progress: 100,
+    deadline: '2024-12-20',
+    status: 'review',
+    budget: '$2,800',
+    tasks: [
+      { id: 'task-4', title: 'Banner Designs', status: 'completed', dueDate: '2024-12-18' },
+      { id: 'task-5', title: 'Social Media Assets', status: 'completed', dueDate: '2024-12-19' },
+      { id: 'task-6', title: 'Email Templates', status: 'completed', dueDate: '2024-12-20' }
+    ]
+  }
+];
+
+const mockNotifications: Notification[] = [
+  {
+    id: 'notif-1',
+    title: 'Project Approved',
+    message: 'Your design proposal for TechFlow Solutions has been approved!',
+    type: 'success',
+    timestamp: '2024-12-19T11:30:00Z',
+    read: false
+  },
+  {
+    id: 'notif-2',
+    title: 'New Message',
+    message: 'You have a new message from Fashion Retail Co. regarding your project.',
+    type: 'info',
+    timestamp: '2024-12-19T10:15:00Z',
+    read: false
+  },
+  {
+    id: 'notif-3',
+    title: 'Payment Received',
+    message: 'Payment of $2,800 has been received for Marketing Campaign Design.',
+    type: 'success',
+    timestamp: '2024-12-19T09:00:00Z',
+    read: true
+  }
+];
+
+export default function FreelancerDashboard() {
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('tasks');
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{name: string, size: string, date: string}>>([]);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const [unreadCount, setUnreadCount] = useState(mockNotifications.filter(n => !n.read).length);
 
+  // Access control
   useEffect(() => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated) {
       router.push('/login');
       return;
     }
 
-    if (!hasPermission(user.role, ['super_admin', 'supervisor', 'freelancer'])) {
+    if (!canAccessPlatform(user?.role || 'client', 'freelancers')) {
       router.push('/platforms');
+      return;
     }
   }, [isAuthenticated, user, router]);
 
-  if (!isAuthenticated || !user || !hasPermission(user.role, ['super_admin', 'supervisor', 'freelancer'])) {
-    return null;
+  if (!isAuthenticated || !user || !canAccessPlatform(user.role, 'freelancers')) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600">You don't have permission to access this platform.</p>
+        </div>
+      </div>
+    );
   }
 
-  const userTasks = getTasksByUser(user.id);
-  const userProjects = getProjects().filter(p => p.assignedFreelancers.includes(user.id));
-
   const stats = [
-    {
-      title: 'Active Tasks',
-      value: userTasks.filter(t => t.status === 'in_progress').length,
-      icon: Briefcase,
-      color: 'from-blue-500 to-cyan-500'
-    },
-    {
-      title: 'Completed Tasks',
-      value: userTasks.filter(t => t.status === 'completed').length,
-      icon: CheckCircle,
-      color: 'from-green-500 to-emerald-500'
-    },
-    {
-      title: 'Pending Reviews',
-      value: userTasks.filter(t => t.status === 'pending_review').length,
-      icon: Clock,
-      color: 'from-yellow-500 to-orange-500'
-    },
-    {
-      title: 'Total Earnings',
-      value: '$2,450',
-      icon: DollarSign,
-      color: 'from-purple-500 to-pink-500'
-    }
+    { title: 'Active Projects', value: mockProjects.filter(p => p.status === 'active').length, icon: Briefcase, color: 'text-blue-600' },
+    { title: 'Completed This Month', value: 8, icon: CheckCircle, color: 'text-green-600' },
+    { title: 'Total Earnings', value: '$12,450', icon: DollarSign, color: 'text-purple-600' },
+    { title: 'Average Rating', value: '4.8', icon: Star, color: 'text-yellow-600' }
   ];
 
-  const marketplaceItems = [
-    {
-      id: 1,
-      title: 'Premium Logo Template',
-      category: 'Design',
-      price: 25,
-      rating: 4.8,
-      downloads: 156,
-      image: '/marketplace/logo-template.jpg'
-    },
-    {
-      id: 2,
-      title: 'Social Media Kit',
-      category: 'Marketing',
-      price: 15,
-      rating: 4.6,
-      downloads: 89,
-      image: '/marketplace/social-kit.jpg'
-    },
-    {
-      id: 3,
-      title: 'Video Editing Template',
-      category: 'Video',
-      price: 35,
-      rating: 4.9,
-      downloads: 234,
-      image: '/marketplace/video-template.jpg'
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-blue-100 text-blue-800';
+      case 'review': return 'bg-yellow-100 text-yellow-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'open': return 'bg-green-100 text-green-800';
+      case 'applied': return 'bg-blue-100 text-blue-800';
+      case 'in_progress': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-  ];
+  };
 
-  const internalMessages = [
-    {
-      id: 1,
-      from: 'supervisor@supervisors.beatrixhub.com',
-      subject: 'New task assigned: Brand Identity Design',
-      preview: 'You have been assigned a new task for the TechStart project...',
-      time: '2 hours ago',
-      unread: true
-    },
-    {
-      id: 2,
-      from: 'admin@admin.beatrixhub.com',
-      subject: 'System Update: New upload features',
-      preview: 'We have added new features to the upload center...',
-      time: '1 day ago',
-      unread: false
+  const getTaskStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'pending': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-  ];
+  };
+
+  const markNotificationAsRead = (notificationId: string) => {
+    setNotifications(notifications.map(notif => 
+      notif.id === notificationId ? { ...notif, read: true } : notif
+    ));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900/20 to-black">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="flex justify-between items-center"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Freelancers Platform</h1>
-              <p className="text-white/60 mt-2">Manage your tasks, uploads, and communications</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                {user.internalEmail}
-              </Badge>
-              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                <Plus className="h-4 w-4 mr-2" />
-                New Task
-              </Button>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Freelancer Dashboard</h1>
+            <p className="text-gray-600">Welcome back, Sara! Here's your work overview</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" className="relative">
+              <Bell className="w-4 h-4 mr-2" />
+              Notifications
+              {unreadCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                  {unreadCount}
+                </Badge>
+              )}
+            </Button>
+            <Button>
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Portfolio
+            </Button>
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
+        {/* Stats Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {stats.map((stat, index) => (
-            <Card key={index} className="bg-white/5 backdrop-blur-sm border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white/60 text-sm font-medium">{stat.title}</p>
-                    <p className="text-3xl font-bold text-white mt-2">{stat.value}</p>
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={index}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                    </div>
+                    <Icon className={`w-8 h-8 ${stat.color}`} />
                   </div>
-                  <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center`}>
-                    <stat.icon className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </motion.div>
 
-        {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white/5 backdrop-blur-sm border-white/10">
-            <TabsTrigger value="tasks" className="text-white data-[state=active]:bg-purple-500">
-              Tasks
-            </TabsTrigger>
-            <TabsTrigger value="uploads" className="text-white data-[state=active]:bg-purple-500">
-              Upload Center
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="text-white data-[state=active]:bg-purple-500">
-              Internal Messages
-            </TabsTrigger>
-            <TabsTrigger value="marketplace" className="text-white data-[state=active]:bg-purple-500">
-              Marketplace
-            </TabsTrigger>
-            <TabsTrigger value="portfolio" className="text-white data-[state=active]:bg-purple-500">
-              Portfolio
-            </TabsTrigger>
-          </TabsList>
+        {/* Main Content Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="jobs">Job Opportunities</TabsTrigger>
+              <TabsTrigger value="projects">My Projects</TabsTrigger>
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="tasks" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">My Tasks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {userTasks.map((task) => (
-                    <div key={task.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-3 h-3 rounded-full ${
-                          task.status === 'completed' ? 'bg-green-400' :
-                          task.status === 'in_progress' ? 'bg-blue-400' :
-                          'bg-yellow-400'
-                        }`} />
-                        <div>
-                          <p className="text-white font-medium">{task.title}</p>
-                          <p className="text-white/60 text-sm">{task.description}</p>
-                          <div className="flex items-center space-x-4 mt-2">
-                            <Badge className={`${
-                              task.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                              task.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-green-500/20 text-green-400'
-                            }`}>
-                              {task.priority}
-                            </Badge>
-                            <span className="text-white/40 text-sm">Due: {new Date(task.deadline).toLocaleDateString()}</span>
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Active Projects */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Briefcase className="w-5 h-5" />
+                      Active Projects
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {mockProjects.filter(p => p.status === 'active').map((project) => (
+                      <div key={project.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium">{project.title}</h4>
+                          <Badge className={getStatusColor(project.status)}>
+                            {project.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">{project.client}</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Progress</span>
+                            <span>{project.progress}%</span>
                           </div>
+                          <Progress value={project.progress} className="h-2" />
+                        </div>
+                        <div className="flex justify-between items-center mt-3">
+                          <span className="text-sm text-gray-600">Due: {project.deadline}</span>
+                          <span className="font-medium">{project.budget}</span>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-16 bg-white/10 rounded-full h-2">
-                          <div 
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
-                            style={{ width: `${task.progress}%` }}
-                          />
-                        </div>
-                        <span className="text-white/60 text-sm">{task.progress}%</span>
-                        <Button variant="ghost" size="sm" className="text-white/60 hover:text-white">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    ))}
+                  </CardContent>
+                </Card>
 
-          <TabsContent value="uploads" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white">Upload Center</CardTitle>
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Files
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="p-6 bg-white/5 rounded-lg border-2 border-dashed border-white/20 hover:border-purple-500/50 transition-colors">
-                    <div className="text-center">
-                      <Image className="h-12 w-12 text-white/40 mx-auto mb-4" />
-                      <p className="text-white font-medium mb-2">Upload Images</p>
-                      <p className="text-white/60 text-sm">PNG, JPG, SVG up to 10MB</p>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6 bg-white/5 rounded-lg border-2 border-dashed border-white/20 hover:border-purple-500/50 transition-colors">
-                    <div className="text-center">
-                      <Video className="h-12 w-12 text-white/40 mx-auto mb-4" />
-                      <p className="text-white font-medium mb-2">Upload Videos</p>
-                      <p className="text-white/60 text-sm">MP4, MOV up to 100MB</p>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6 bg-white/5 rounded-lg border-2 border-dashed border-white/20 hover:border-purple-500/50 transition-colors">
-                    <div className="text-center">
-                      <FileText className="h-12 w-12 text-white/40 mx-auto mb-4" />
-                      <p className="text-white font-medium mb-2">Upload Documents</p>
-                      <p className="text-white/60 text-sm">PDF, DOC, PSD up to 50MB</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recent Uploads */}
-                <div className="mt-8">
-                  <h3 className="text-white font-semibold mb-4">Recent Uploads</h3>
-                  <div className="space-y-3">
-                    {uploadedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <FileText className="h-5 w-5 text-white/60" />
+                {/* Recent Notifications */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bell className="w-5 h-5" />
+                      Recent Notifications
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {notifications.slice(0, 3).map((notification) => (
+                      <div 
+                        key={notification.id} 
+                        className={`p-3 rounded-lg border-l-4 ${
+                          notification.read ? 'bg-gray-50' : 'bg-blue-50'
+                        } ${
+                          notification.type === 'success' ? 'border-l-green-500' :
+                          notification.type === 'warning' ? 'border-l-yellow-500' :
+                          notification.type === 'error' ? 'border-l-red-500' :
+                          'border-l-blue-500'
+                        }`}
+                        onClick={() => markNotificationAsRead(notification.id)}
+                      >
+                        <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-white text-sm">{file.name}</p>
-                            <p className="text-white/40 text-xs">{file.size} • {file.date}</p>
+                            <h5 className="font-medium text-sm">{notification.title}</h5>
+                            <p className="text-sm text-gray-600">{notification.message}</p>
+                          </div>
+                          {!notification.read && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(notification.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Job Opportunities Tab */}
+            <TabsContent value="jobs" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Job Opportunities</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {mockJobs.map((job) => (
+                      <div key={job.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-semibold">{job.title}</h3>
+                            <p className="text-gray-600">{job.client}</p>
+                          </div>
+                          <Badge className={getStatusColor(job.status)}>
+                            {job.status}
+                          </Badge>
+                        </div>
+                        <p className="text-gray-700 mb-4">{job.description}</p>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {job.skills.map((skill, index) => (
+                            <Badge key={index} variant="outline">{skill}</Badge>
+                          ))}
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex gap-4 text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              <DollarSign className="w-4 h-4" />
+                              {job.budget}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {job.duration}
+                            </span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm">
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Details
+                            </Button>
+                            {job.status === 'open' && (
+                              <Button size="sm">
+                                Apply Now
+                              </Button>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" className="text-white/60 hover:text-white">
-                            <Download className="h-4 w-4" />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* My Projects Tab */}
+            <TabsContent value="projects" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Projects</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {mockProjects.map((project) => (
+                      <div key={project.id} className="border rounded-lg p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-semibold">{project.title}</h3>
+                            <p className="text-gray-600">{project.client}</p>
+                          </div>
+                          <Badge className={getStatusColor(project.status)}>
+                            {project.status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-sm text-gray-600">Progress</p>
+                            <div className="flex items-center gap-2">
+                              <Progress value={project.progress} className="flex-1 h-2" />
+                              <span className="text-sm font-medium">{project.progress}%</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Budget</p>
+                              <p className="font-medium">{project.budget}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Deadline</p>
+                              <p className="font-medium">{project.deadline}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-medium">Tasks</h4>
+                          {project.tasks.map((task) => (
+                            <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <Badge className={getTaskStatusColor(task.status)}>
+                                  {task.status}
+                                </Badge>
+                                <span className="text-sm">{task.title}</span>
+                              </div>
+                              <span className="text-xs text-gray-500">Due: {task.dueDate}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="flex gap-2 mt-4">
+                          <Button variant="outline" size="sm">
+                            <MessageSquare className="w-4 h-4 mr-1" />
+                            Message Client
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-white/60 hover:text-white">
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="outline" size="sm">
+                            <Upload className="w-4 h-4 mr-1" />
+                            Submit Work
                           </Button>
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="messages" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Internal Messages</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Message List */}
-                  <div className="lg:col-span-1">
+            {/* Profile Tab */}
+            <TabsContent value="profile" className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-5 h-5" />
+                      Profile Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
+                        <User className="w-8 h-8 text-gray-500" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Sara Ahmed</h3>
+                        <p className="text-gray-600">Graphic Designer & Brand Specialist</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                          <span className="text-sm">4.8 (127 reviews)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="space-y-3">
-                      {internalMessages.map((message) => (
-                        <div 
-                          key={message.id} 
-                          className={`p-4 rounded-lg cursor-pointer transition-colors ${
-                            message.unread ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-white/5 hover:bg-white/10'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-white font-medium text-sm">{message.from}</p>
-                            {message.unread && <div className="w-2 h-2 bg-purple-400 rounded-full" />}
-                          </div>
-                          <p className="text-white/80 text-sm font-medium">{message.subject}</p>
-                          <p className="text-white/60 text-xs mt-1">{message.preview}</p>
-                          <p className="text-white/40 text-xs mt-2">{message.time}</p>
-                        </div>
-                      ))}
+                      <div>
+                        <p className="text-sm font-medium">Email</p>
+                        <p className="text-gray-600">sara@beatrixhub.com</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Location</p>
+                        <p className="text-gray-600">Cairo, Egypt</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Experience</p>
+                        <p className="text-gray-600">5+ years in design and branding</p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Message Content */}
-                  <div className="lg:col-span-2">
-                    <div className="bg-white/5 rounded-lg p-6 h-96 flex flex-col">
-                      <div className="flex-1 overflow-y-auto space-y-4">
-                        <div className="text-center text-white/40 text-sm">
-                          Select a message to view
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 pt-4 border-t border-white/10">
-                        <div className="flex space-x-3">
-                          <Textarea
-                            placeholder="Type your message..."
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            className="flex-1 bg-white/5 border-white/20 text-white placeholder:text-white/40"
-                          />
-                          <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                            <Send className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    <Button className="w-full">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                  </CardContent>
+                </Card>
 
-          <TabsContent value="marketplace" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Marketplace</CardTitle>
-                <CardDescription className="text-white/60">
-                  Buy and sell digital assets with other platform members
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {marketplaceItems.map((item) => (
-                    <div key={item.id} className="bg-white/5 rounded-lg overflow-hidden hover:bg-white/10 transition-colors">
-                      <div className="h-48 bg-gradient-to-r from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                        <Image className="h-16 w-16 text-white/40" />
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge className="bg-purple-500/20 text-purple-400">{item.category}</Badge>
-                          <div className="flex items-center space-x-1">
-                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span className="text-white/60 text-sm">{item.rating}</span>
-                          </div>
-                        </div>
-                        <h3 className="text-white font-semibold mb-2">{item.title}</h3>
-                        <div className="flex items-center justify-between">
-                          <div className="text-white/60 text-sm">{item.downloads} downloads</div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-white font-bold">${item.price}</span>
-                            <Button size="sm" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                              Buy
-                            </Button>
-                          </div>
-                        </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="w-5 h-5" />
+                      Skills & Portfolio
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-medium mb-2">Skills</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {['Graphic Design', 'Brand Identity', 'Adobe Creative Suite', 'UI/UX Design', 'Illustration', 'Typography'].map((skill) => (
+                          <Badge key={skill} variant="outline">{skill}</Badge>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          <TabsContent value="portfolio" className="space-y-6">
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white">My Portfolio</CardTitle>
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Work
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="p-6 bg-white/5 rounded-lg border-2 border-dashed border-white/20 hover:border-purple-500/50 transition-colors">
-                    <div className="text-center">
-                      <Plus className="h-12 w-12 text-white/40 mx-auto mb-4" />
-                      <p className="text-white font-medium mb-2">Add New Project</p>
-                      <p className="text-white/60 text-sm">Showcase your best work</p>
+                    <div>
+                      <h4 className="font-medium mb-2">Portfolio</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[1, 2, 3, 4].map((item) => (
+                          <div key={item} className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+                            <FileText className="w-6 h-6 text-gray-500" />
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+
+                    <Button variant="outline" className="w-full">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Add Portfolio Item
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </div>
     </div>
   );

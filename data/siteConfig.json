@@ -25,11 +25,6 @@
   "navigation": {
     "main": [
       {
-        "title": "About",
-        "href": "/about",
-        "description": "Our story, mission, and team"
-      },
-      {
         "title": "Services",
         "href": "/services",
         "description": "What we offer",
@@ -76,6 +71,11 @@
         "href": "/platforms",
         "description": "Access internal platforms",
         "auth": true
+      },
+      {
+        "title": "About",
+        "href": "/about",
+        "description": "Our story, mission, and team"
       }
     ],
     "footer": [

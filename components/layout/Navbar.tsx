@@ -1,370 +1,273 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ChevronDown, User, LogOut, Settings, Briefcase, MessageSquare, Bell, FileText, Users, Award, TrendingUp } from 'lucide-react'
-import { useAuth, getRoleDisplayName, getRoleColor, hasPermission, UserRole } from '@/lib/auth'
-import { getSiteConfig } from '@/lib/data'
+import { Menu, X, ChevronDown, User, LogOut, Settings, Briefcase, Bell, Globe } from 'lucide-react'
+import { useAuth, getRoleDisplayName, hasPermission, UserRole } from '@/lib/auth'
+import siteConfig from '@/data/siteConfig.json'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
+import Logo from './Logo'
 
-const siteConfig = getSiteConfig()
+interface NavItem {
+  title: string
+  href: string
+  description?: string
+  auth?: boolean
+  children?: NavItem[]
+  roles?: UserRole[]
+  icon?: React.ElementType
+}
+
+const NavDropdown = ({
+  item,
+  isScrolled,
+  isActive,
+  onClick,
+  onClose,
+}: {
+  item: NavItem
+  isScrolled: boolean
+  isActive: boolean
+  onClick: () => void
+  onClose: () => void
+}) => (
+  <div className="relative">
+    <button
+      onClick={onClick}
+      className={`flex items-center space-x-1 transition-colors text-sm font-medium ${
+        isActive ? 'text-purple-400' : 'text-white/70 hover:text-white'
+      }`}
+    >
+      <span>{item.title}</span>
+      <ChevronDown className={`h-4 w-4 transition-transform ${isActive ? 'rotate-180' : ''}`} />
+    </button>
+
+    <AnimatePresence>
+      {isActive && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          className="absolute top-full left-0 mt-2 w-56 bg-black/80 backdrop-blur-lg border border-white/10 rounded-lg shadow-lg"
+        >
+          <div className="p-2">
+            {item.children?.map((child) => (
+              <Link
+                key={child.href}
+                href={child.href}
+                onClick={onClose}
+                className="group flex flex-col px-3 py-2 text-white/80 hover:bg-white/10 rounded-md transition-colors"
+              >
+                <span className="font-semibold text-white">{child.title}</span>
+                <span className="text-xs text-white/60">{child.description}</span>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+)
+
+// Language and RTL state management
+const useLanguageToggle = () => {
+  const [locale, setLocale] = useState<'en' | 'ar'>('en')
+  const [isRTL, setIsRTL] = useState(false)
+
+  useEffect(() => {
+    // Apply RTL styles to document
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr'
+    document.documentElement.lang = locale
+  }, [isRTL, locale])
+
+  const toggleLanguage = () => {
+    const newLocale = locale === 'en' ? 'ar' : 'en'
+    setLocale(newLocale)
+    setIsRTL(newLocale === 'ar')
+  }
+
+  return { locale, isRTL, toggleLanguage }
+}
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const { user, isAuthenticated, logout } = useAuth()
   const pathname = usePathname()
+  const { locale, toggleLanguage } = useLanguageToggle()
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleLogout = () => {
-    logout()
-    setShowUserMenu(false)
+  const handleDropdown = (title: string) => {
+    setOpenDropdown(openDropdown === title ? null : title)
   }
 
-  const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Services', href: '/services' },
-    { name: 'Work', href: '/work' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
-    { name: 'Consulting', href: '/consulting' },
-    { name: 'Exclusive Store', href: '/exclusive' },
-    { name: 'Join Us', href: '/join' },
-    { name: 'Request Collaboration', href: '/request' },
-    { name: 'Become a Partner', href: '/become-a-partner' },
-    { name: 'Careers', href: '/careers' },
-    { name: 'Order Project', href: '/client-order' }
+  // Only show the main nav items in the correct order
+  const mainNav = [
+    ...siteConfig.navigation.main.filter(
+      (item: any) =>
+        ['About', 'Services', 'Portfolio', 'Consulting', 'Platforms'].includes(item.title)
+    ).sort((a: any, b: any) => {
+      const order = ['About', 'Services', 'Portfolio', 'Consulting', 'Platforms']
+      return order.indexOf(a.title) - order.indexOf(b.title)
+    })
   ]
-
-  const platformRoutes = [
-    { name: 'Freelancers', href: '/platforms/freelancers', roles: ['super_admin', 'supervisor', 'freelancer'] as UserRole[] },
-    { name: 'Clients', href: '/platforms/clients', roles: ['super_admin', 'supervisor', 'client'] as UserRole[] },
-    { name: 'Supervisors', href: '/platforms/supervisors', roles: ['super_admin', 'supervisor'] as UserRole[] },
-    { name: 'Distributors', href: '/platforms/distributors', roles: ['super_admin', 'distributor'] as UserRole[] },
-    { name: 'Producers', href: '/platforms/producers', roles: ['super_admin', 'producer'] as UserRole[] },
-    { name: 'Startups', href: '/platforms/startups', roles: ['super_admin', 'startup'] as UserRole[] },
-    { name: 'Experts', href: '/platforms/experts', roles: ['super_admin', 'expert'] as UserRole[] }
-  ]
-
-  const adminRoutes = [
-    { name: 'Dashboard', href: '/admin', icon: Briefcase },
-    { name: 'Visual Editor', href: '/admin/visual-editor', icon: FileText },
-    { name: 'User Management', href: '/admin/users', icon: Users },
-    { name: 'Projects', href: '/admin/projects', icon: Award },
-    { name: 'Analytics', href: '/admin/analytics', icon: TrendingUp },
-    { name: 'Settings', href: '/admin/settings', icon: Settings }
-  ]
-
-  const accessiblePlatformRoutes = platformRoutes.filter(route => 
-    user?.role && hasPermission(user.role, route.roles)
-  )
-
-  const accessibleAdminRoutes = adminRoutes.filter(route => 
-    user?.role && hasPermission(user.role, ['super_admin'])
-  )
 
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-black/90 backdrop-blur-md border-b border-white/10'
-          : 'bg-transparent'
+      transition={{ duration: 0.5 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+        isScrolled || isOpen ? 'bg-black/90 backdrop-blur-lg border-b border-white/10' : 'bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]'
       }`}
+      style={{ boxShadow: isScrolled ? '0 2px 24px 0 rgba(0,0,0,0.12)' : undefined }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 lg:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
-            >
-              {siteConfig.site.name}
-            </motion.div>
-          </Link>
+          <Logo />
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {navigation.slice(0, 5).map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`text-sm font-medium transition-colors ${
-                  pathname === item.href
-                    ? 'text-purple-400'
-                    : 'text-white/70 hover:text-white'
-                }`}
-              >
-                {item.name}
-              </Link>
+            {mainNav.map((item) => (
+              item.children ? (
+                <NavDropdown
+                  key={item.title}
+                  item={item}
+                  isScrolled={isScrolled}
+                  isActive={openDropdown === item.title}
+                  onClick={() => handleDropdown(item.title)}
+                  onClose={() => setOpenDropdown(null)}
+                />
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`text-base font-medium transition-colors px-2 py-1 rounded-lg ${
+                    pathname === item.href ? 'text-purple-400 bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  {item.title}
+                </Link>
+              )
             ))}
-
-            {/* Platform Dropdown */}
-            {isAuthenticated && accessiblePlatformRoutes.length > 0 && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-1 text-white/70 hover:text-white transition-colors"
-                >
-                  <span className="text-sm font-medium">Platforms</span>
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-                
-                <AnimatePresence>
-                  {showUserMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 mt-2 w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-lg"
-                    >
-                      <div className="py-2">
-                        {accessiblePlatformRoutes.map((route) => (
-                          <Link
-                            key={route.name}
-                            href={route.href}
-                            className="block px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            {route.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-
-            {/* Admin Dropdown */}
-            {isAuthenticated && accessibleAdminRoutes.length > 0 && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-1 text-white/70 hover:text-white transition-colors"
-                >
-                  <span className="text-sm font-medium">Admin</span>
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-                
-                <AnimatePresence>
-                  {showUserMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 mt-2 w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-lg"
-                    >
-                      <div className="py-2">
-                        {accessibleAdminRoutes.map((route) => (
-                          <Link
-                            key={route.name}
-                            href={route.href}
-                            className="flex items-center space-x-2 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            <route.icon className="h-4 w-4" />
-                            <span>{route.name}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
           </div>
 
-          {/* Right side */}
-          <div className="flex items-center space-x-4">
-            {/* Notifications */}
-            {isAuthenticated && (
-              <Button variant="ghost" size="sm" className="text-white/60 hover:text-white">
-                <Bell className="h-5 w-5" />
-              </Button>
-            )}
+          {/* User/CTA */}
+          <div className="flex items-center gap-2">
+            {/* Language Toggle */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={toggleLanguage}
+              className="text-white/70 hover:text-white hidden lg:flex"
+            >
+              <Globe className="h-4 w-4 mr-2" />
+              {locale === 'ar' ? 'English' : 'العربية'}
+            </Button>
 
-            {/* User Menu */}
             {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-2 text-white/70 hover:text-white transition-colors"
-                >
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">{user?.name?.charAt(0)}</span>
-                  </div>
-                  <span className="hidden md:block text-sm font-medium">{user?.name}</span>
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-                
-                <AnimatePresence>
-                  {showUserMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full right-0 mt-2 w-48 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-lg"
-                    >
-                      <div className="py-2">
-                        <div className="px-4 py-2 border-b border-white/10">
-                          <p className="text-sm font-medium text-white">{user?.name}</p>
-                          <p className="text-xs text-white/60">{user?.email}</p>
-                          <Badge className="mt-1 bg-purple-500/20 text-purple-400 border-purple-500/30">
-                            {user?.role}
-                          </Badge>
+              <Fragment>
+                <Button variant="ghost" size="icon" className="text-white/70 hover:text-white">
+                  <Bell className="h-5 w-5" />
+                </Button>
+                <div className="relative">
+                  <button
+                    onClick={() => handleDropdown('userMenu')}
+                    className="flex items-center space-x-2"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.avatar} />
+                      <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="hidden md:block text-sm font-medium text-white/80">{user?.name}</span>
+                    <ChevronDown className="h-4 w-4 text-white/70" />
+                  </button>
+                  <AnimatePresence>
+                    {openDropdown === 'userMenu' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute top-full right-0 mt-2 w-56 bg-black/90 backdrop-blur-lg border border-white/10 rounded-lg shadow-lg"
+                      >
+                        <div className="p-2 text-white">
+                          <div className="px-3 py-2 border-b border-white/10">
+                            <p className="font-semibold">{user?.name}</p>
+                            <p className="text-xs text-white/60">{user?.email}</p>
+                            {user && <Badge className="mt-2" variant="secondary">{getRoleDisplayName(user.role)}</Badge>}
+                          </div>
+                          <Link href="/platforms" onClick={() => setOpenDropdown(null)} className="flex items-center gap-2 w-full px-3 py-2 mt-1 text-left hover:bg-white/10 rounded-md">
+                            <Briefcase className="w-4 h-4" />
+                            My Platform
+                          </Link>
+                          {user?.role === 'super_admin' && (
+                            <Link href="/admin" onClick={() => setOpenDropdown(null)} className="flex items-center gap-2 w-full px-3 py-2 text-left hover:bg-white/10 rounded-md">
+                              <Settings className="w-4 h-4" />
+                              Admin
+                            </Link>
+                          )}
+                          <Button onClick={logout} className="w-full mt-2 justify-start bg-transparent hover:bg-red-500/20 text-red-400 px-3">
+                            <LogOut className="w-4 h-4 mr-2"/>
+                            Logout
+                          </Button>
                         </div>
-                        
-                        <Link
-                          href="/platforms"
-                          className="flex items-center space-x-2 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <Briefcase className="h-4 w-4" />
-                          <span>My Platform</span>
-                        </Link>
-                        
-                        <Link
-                          href="/profile"
-                          className="flex items-center space-x-2 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <User className="h-4 w-4" />
-                          <span>Profile</span>
-                        </Link>
-                        
-                        <Link
-                          href="/settings"
-                          className="flex items-center space-x-2 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <Settings className="h-4 w-4" />
-                          <span>Settings</span>
-                        </Link>
-                        
-                        <div className="border-t border-white/10 mt-2 pt-2">
-                          <button
-                            onClick={handleLogout}
-                            className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                          >
-                            <LogOut className="h-4 w-4" />
-                            <span>Logout</span>
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </Fragment>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Link href="/login">
-                  <Button variant="ghost" className="text-white hover:bg-white/10">
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/join">
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
-                    Join Us
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile menu button */}
-            <div className="lg:hidden">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsOpen(!isOpen)}
-                className="text-white hover:bg-white/10"
-              >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              <Button asChild size="sm" className="hidden lg:flex bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:from-purple-600 hover:to-pink-600">
+                <Link href="/login">Login</Link>
               </Button>
+            )}
+            <div className="lg:hidden">
+              <button onClick={() => setIsOpen(!isOpen)} className="text-white">
+                {isOpen ? <X /> : <Menu />}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-black/90 backdrop-blur-md border-t border-white/10"
+            className="lg:hidden bg-black/90 backdrop-blur-lg border-b border-white/10"
           >
-            <div className="px-4 py-6 space-y-4">
-              {navigation.map((item) => (
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {mainNav.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   href={item.href}
-                  className={`block text-base font-medium transition-colors ${
-                    pathname === item.href
-                      ? 'text-purple-400'
-                      : 'text-white/70 hover:text-white'
-                  }`}
                   onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-white/80 hover:bg-white/10"
                 >
-                  {item.name}
+                  {item.title}
                 </Link>
               ))}
-              
-              {isAuthenticated && accessiblePlatformRoutes.length > 0 && (
-                <div className="border-t border-white/10 pt-4">
-                  <p className="text-white/40 text-sm font-medium mb-2">Platforms</p>
-                  {accessiblePlatformRoutes.map((route) => (
-                    <Link
-                      key={route.name}
-                      href={route.href}
-                      className="block text-base text-white/70 hover:text-white transition-colors py-1"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {route.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-              
-              {isAuthenticated && accessibleAdminRoutes.length > 0 && (
-                <div className="border-t border-white/10 pt-4">
-                  <p className="text-white/40 text-sm font-medium mb-2">Admin</p>
-                  {accessibleAdminRoutes.map((route) => (
-                    <Link
-                      key={route.name}
-                      href={route.href}
-                      className="flex items-center space-x-2 text-base text-white/70 hover:text-white transition-colors py-1"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <route.icon className="h-4 w-4" />
-                      <span>{route.name}</span>
-                    </Link>
-                  ))}
-                </div>
+              {isAuthenticated ? (
+                <Button onClick={() => { logout(); setIsOpen(false); }} className="w-full mt-4">
+                  Logout
+                </Button>
+              ) : (
+                <Button asChild className="w-full mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">
+                  <Link href="/login">Login</Link>
+                </Button>
               )}
             </div>
           </motion.div>

@@ -131,3 +131,25 @@ html {
 .animate-slide-in {
   animation: slideIn 0.3s ease-out;
 }
+
+/* Custom cursor styles */
+html, body {
+  cursor: none;
+}
+
+/* Show default cursor on interactive elements when custom cursor is disabled */
+* {
+  cursor: none;
+}
+
+/* Custom cursor hover effects */
+button:hover,
+a:hover,
+[role="button"]:hover {
+  cursor: none;
+}
+
+/* Ensure custom cursor works on all elements */
+* {
+  cursor: none !important;
+}

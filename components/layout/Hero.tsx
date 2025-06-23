@@ -20,7 +20,7 @@ export default function Hero() {
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
+          className="absolute z-0 w-auto min-w-full min-h-full max-w-none"
           poster="/images/hero-poster.jpg"
         >
           <source src="/videos/hero-bg.mp4" type="video/mp4" />
@@ -29,22 +29,22 @@ export default function Hero() {
         </video>
         
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black opacity-50" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 text-center text-white px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-          {siteConfig.company.name}
+          {siteConfig.site.name}
         </h1>
         <p className="text-xl sm:text-2xl lg:text-3xl text-gray-300 mb-8 font-light">
-          {siteConfig.company.tagline}
+          {siteConfig.site.tagline}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 
             onClick={scrollToContent}
             size="lg"
-            className="bg-white text-black hover:bg-gray-100 px-8 py-3 text-lg"
+            className="bg-white text-black hover:bg-gray-200 px-8 py-3 text-lg"
           >
             Explore Our Work
           </Button>

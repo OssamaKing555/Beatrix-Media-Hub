@@ -1,361 +1,635 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  Briefcase, 
+  Clock, 
+  DollarSign, 
+  Star, 
+  MessageSquare, 
+  Users,
+  FileText,
+  Download,
+  Eye,
+  Plus,
+  CheckCircle,
+  AlertCircle,
+  TrendingUp,
+  Calendar,
+  Settings,
+  Upload,
+  Send,
+  Receipt
+} from 'lucide-react';
 
-export default function ClientsPage() {
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  status: 'planning' | 'in_progress' | 'review' | 'completed';
+  progress: number;
+  startDate: string;
+  endDate: string;
+  budget: string;
+  team: string[];
+  tasks: Task[];
+}
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'review';
+  assignedTo: string;
+  dueDate: string;
+  priority: 'low' | 'medium' | 'high';
+}
+
+interface ServiceRequest {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  status: 'draft' | 'submitted' | 'in_review' | 'approved' | 'in_progress' | 'completed';
+  submittedDate: string;
+  estimatedCost: string;
+  priority: 'low' | 'medium' | 'high';
+}
+
+interface Invoice {
+  id: string;
+  projectTitle: string;
+  amount: number;
+  status: 'draft' | 'sent' | 'paid' | 'overdue';
+  dueDate: string;
+  issueDate: string;
+  description: string;
+}
+
+const mockProjects: Project[] = [
+  {
+    id: 'proj-1',
+    title: 'Brand Identity Redesign',
+    description: 'Complete rebranding including logo, color palette, and brand guidelines',
+    status: 'in_progress',
+    progress: 65,
+    startDate: '2024-11-01',
+    endDate: '2024-12-25',
+    budget: '$15,000',
+    team: ['Sara Ahmed', 'Ahmed Hassan'],
+    tasks: [
+      {
+        id: 'task-1',
+        title: 'Logo Design',
+        description: 'Create new logo variations',
+        status: 'completed',
+        assignedTo: 'Sara Ahmed',
+        dueDate: '2024-12-15',
+        priority: 'high'
+      },
+      {
+        id: 'task-2',
+        title: 'Brand Guidelines',
+        description: 'Develop comprehensive brand guidelines',
+        status: 'in_progress',
+        assignedTo: 'Ahmed Hassan',
+        dueDate: '2024-12-20',
+        priority: 'medium'
+      },
+      {
+        id: 'task-3',
+        title: 'Website Updates',
+        description: 'Update website with new branding',
+        status: 'pending',
+        assignedTo: 'Sara Ahmed',
+        dueDate: '2024-12-25',
+        priority: 'high'
+      }
+    ]
+  },
+  {
+    id: 'proj-2',
+    title: 'Marketing Campaign',
+    description: 'Digital marketing campaign for Q1 product launch',
+    status: 'planning',
+    progress: 25,
+    startDate: '2024-12-20',
+    endDate: '2024-03-20',
+    budget: '$8,000',
+    team: ['Fatima Zahra'],
+    tasks: [
+      {
+        id: 'task-4',
+        title: 'Campaign Strategy',
+        description: 'Develop marketing strategy and timeline',
+        status: 'in_progress',
+        assignedTo: 'Fatima Zahra',
+        dueDate: '2024-12-25',
+        priority: 'high'
+      }
+    ]
+  }
+];
+
+const mockServiceRequests: ServiceRequest[] = [
+  {
+    id: 'req-1',
+    title: 'Social Media Management',
+    description: 'Monthly social media content creation and management',
+    category: 'Marketing',
+    status: 'approved',
+    submittedDate: '2024-12-15',
+    estimatedCost: '$2,500/month',
+    priority: 'medium'
+  },
+  {
+    id: 'req-2',
+    title: 'Video Production',
+    description: 'Product demonstration video for website',
+    category: 'Production',
+    status: 'in_review',
+    submittedDate: '2024-12-18',
+    estimatedCost: '$5,000',
+    priority: 'high'
+  }
+];
+
+const mockInvoices: Invoice[] = [
+  {
+    id: 'inv-1',
+    projectTitle: 'Brand Identity Redesign',
+    amount: 7500,
+    status: 'paid',
+    dueDate: '2024-12-10',
+    issueDate: '2024-12-01',
+    description: 'Phase 1: Logo and brand identity development'
+  },
+  {
+    id: 'inv-2',
+    projectTitle: 'Brand Identity Redesign',
+    amount: 7500,
+    status: 'sent',
+    dueDate: '2024-12-25',
+    issueDate: '2024-12-15',
+    description: 'Phase 2: Brand guidelines and implementation'
+  },
+  {
+    id: 'inv-3',
+    projectTitle: 'Marketing Campaign',
+    amount: 2000,
+    status: 'draft',
+    dueDate: '2024-12-30',
+    issueDate: '2024-12-20',
+    description: 'Campaign strategy and planning'
+  }
+];
+
+export default function ClientDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>(mockServiceRequests);
+  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+  const [newRequest, setNewRequest] = useState({
+    title: '',
+    description: '',
+    category: '',
+    priority: 'medium' as 'low' | 'medium' | 'high'
+  });
 
-  const clientServices = [
-    {
-      id: 1,
-      title: 'Content Creation',
-      description: 'Professional video, audio, and multimedia content production',
-      price: '$3,000 - $50,000',
-      duration: '2-12 weeks',
-      features: ['Video Production', 'Audio Recording', 'Post-Production', 'Quality Assurance']
-    },
-    {
-      id: 2,
-      title: 'Brand Development',
-      description: 'Complete brand identity and marketing strategy',
-      price: '$5,000 - $25,000',
-      duration: '4-8 weeks',
-      features: ['Logo Design', 'Brand Guidelines', 'Marketing Strategy', 'Visual Identity']
-    },
-    {
-      id: 3,
-      title: 'Digital Marketing',
-      description: 'Comprehensive digital marketing and advertising campaigns',
-      price: '$2,000 - $20,000',
-      duration: '1-6 months',
-      features: ['Social Media Marketing', 'Content Marketing', 'SEO Optimization', 'Analytics']
-    },
-    {
-      id: 4,
-      title: 'Consulting Services',
-      description: 'Strategic consulting for media and marketing decisions',
-      price: '$150 - $500/hour',
-      duration: 'Flexible',
-      features: ['Strategy Development', 'Market Analysis', 'Performance Review', 'Implementation Support']
-    }
+  const stats = [
+    { title: 'Active Projects', value: projects.filter(p => p.status === 'in_progress').length, icon: Briefcase, color: 'text-blue-600' },
+    { title: 'Pending Tasks', value: projects.reduce((acc, p) => acc + p.tasks.filter(t => t.status === 'pending').length, 0), icon: Clock, color: 'text-yellow-600' },
+    { title: 'Total Spent', value: '$22,500', icon: DollarSign, color: 'text-purple-600' },
+    { title: 'Service Requests', value: serviceRequests.filter(r => r.status === 'in_review').length, icon: FileText, color: 'text-green-600' }
   ];
 
-  const successStories = [
-    {
-      id: 1,
-      client: 'TechCorp Solutions',
-      industry: 'Technology',
-      result: '400% increase in brand awareness',
-      description: 'Complete rebrand and marketing campaign that transformed their market presence'
-    },
-    {
-      id: 2,
-      client: 'EcoLife Products',
-      industry: 'Sustainability',
-      result: '250% growth in online sales',
-      description: 'Digital marketing strategy that connected with environmentally conscious consumers'
-    },
-    {
-      id: 3,
-      client: 'HealthSync Medical',
-      industry: 'Healthcare',
-      result: '300% increase in patient engagement',
-      description: 'Professional video content and digital marketing that built trust and credibility'
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'review': return 'bg-yellow-100 text-yellow-800';
+      case 'planning': return 'bg-purple-100 text-purple-800';
+      case 'pending': return 'bg-gray-100 text-gray-800';
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'submitted': return 'bg-blue-100 text-blue-800';
+      case 'in_review': return 'bg-yellow-100 text-yellow-800';
+      case 'paid': return 'bg-green-100 text-green-800';
+      case 'sent': return 'bg-blue-100 text-blue-800';
+      case 'draft': return 'bg-gray-100 text-gray-800';
+      case 'overdue': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-  ];
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleSubmitRequest = () => {
+    if (newRequest.title && newRequest.description && newRequest.category) {
+      const request: ServiceRequest = {
+        id: `req-${Date.now()}`,
+        title: newRequest.title,
+        description: newRequest.description,
+        category: newRequest.category,
+        status: 'draft',
+        submittedDate: new Date().toISOString(),
+        estimatedCost: 'TBD',
+        priority: newRequest.priority
+      };
+      setServiceRequests([...serviceRequests, request]);
+      setNewRequest({ title: '', description: '', category: '', priority: 'medium' });
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-red-600 to-pink-700 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative container mx-auto px-4 py-24">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center max-w-4xl mx-auto"
-          >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              Client Platform
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-orange-100">
-              Professional media and marketing services for businesses of all sizes
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-orange-600 hover:bg-orange-50">
-                Get Started
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600">
-                View Services
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-between items-center"
+        >
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Client Dashboard</h1>
+            <p className="text-gray-600">Welcome back, Mohamed! Here's your project overview</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Contact Team
+            </Button>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              New Request
+            </Button>
+          </div>
+        </motion.div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-16">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="success">Success Stories</TabsTrigger>
-            <TabsTrigger value="contact">Get Started</TabsTrigger>
-          </TabsList>
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={index}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                    </div>
+                    <Icon className={`w-8 h-8 ${stat.color}`} />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </motion.div>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="grid md:grid-cols-2 gap-8 items-center"
-            >
-              <div>
-                <h2 className="text-3xl font-bold mb-6 text-gray-900">
-                  Why Clients Choose Beatrix Media Hub
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-orange-600 font-bold">1</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">Professional Quality</h3>
-                      <p className="text-gray-600">Industry-standard production quality with proven results.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-red-600 font-bold">2</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">Custom Solutions</h3>
-                      <p className="text-gray-600">Tailored services designed specifically for your business needs.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-pink-600 font-bold">3</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">Measurable Results</h3>
-                      <p className="text-gray-600">Clear metrics and ROI tracking for all our services.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl p-8 shadow-xl">
-                <h3 className="text-2xl font-bold mb-6 text-center">Client Success</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-orange-600 mb-2">500+</div>
-                    <div className="text-gray-600">Happy Clients</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-red-600 mb-2">1000+</div>
-                    <div className="text-gray-600">Projects Completed</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-pink-600 mb-2">95%</div>
-                    <div className="text-gray-600">Satisfaction Rate</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-purple-600 mb-2">4.9/5</div>
-                    <div className="text-gray-600">Client Rating</div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </TabsContent>
+        {/* Main Content Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="projects">Projects</TabsTrigger>
+              <TabsTrigger value="requests">Service Requests</TabsTrigger>
+              <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            </TabsList>
 
-          {/* Services Tab */}
-          <TabsContent value="services" className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Client Services</h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Comprehensive media and marketing solutions for businesses
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-8">
-              {clientServices.map((service, index) => (
-                <motion.div
-                  key={service.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  <Card className="h-full hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="text-xl">{service.title}</CardTitle>
-                      <CardDescription>{service.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <Badge variant="secondary">{service.duration}</Badge>
-                        <span className="font-semibold text-lg">{service.price}</span>
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Active Projects */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Briefcase className="w-5 h-5" />
+                      Active Projects
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {projects.filter(p => p.status === 'in_progress').map((project) => (
+                      <div key={project.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium">{project.title}</h4>
+                          <Badge className={getStatusColor(project.status)}>
+                            {project.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">{project.description}</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Progress</span>
+                            <span>{project.progress}%</span>
+                          </div>
+                          <Progress value={project.progress} className="h-2" />
+                        </div>
+                        <div className="flex justify-between items-center mt-3">
+                          <span className="text-sm text-gray-600">Due: {project.endDate}</span>
+                          <span className="font-medium">{project.budget}</span>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm text-gray-700">Includes:</h4>
-                        <ul className="space-y-1">
-                          {service.features.map((feature, idx) => (
-                            <li key={idx} className="text-sm text-gray-600 flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                              {feature}
-                            </li>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Recent Invoices */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Receipt className="w-5 h-5" />
+                      Recent Invoices
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {invoices.slice(0, 3).map((invoice) => (
+                      <div key={invoice.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium">{invoice.projectTitle}</h4>
+                          <Badge className={getStatusColor(invoice.status)}>
+                            {invoice.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">{invoice.description}</p>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Due: {invoice.dueDate}</span>
+                          <span className="font-medium">${invoice.amount.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Projects Tab */}
+            <TabsContent value="projects" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Projects</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {projects.map((project) => (
+                      <div key={project.id} className="border rounded-lg p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-semibold">{project.title}</h3>
+                            <p className="text-gray-600">{project.description}</p>
+                          </div>
+                          <Badge className={getStatusColor(project.status)}>
+                            {project.status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-sm text-gray-600">Progress</p>
+                            <div className="flex items-center gap-2">
+                              <Progress value={project.progress} className="flex-1 h-2" />
+                              <span className="text-sm font-medium">{project.progress}%</span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">Budget</p>
+                              <p className="font-medium">{project.budget}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Team</p>
+                              <p className="font-medium">{project.team.length} members</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-medium">Tasks</h4>
+                          {project.tasks.map((task) => (
+                            <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <Badge className={getStatusColor(task.status)}>
+                                  {task.status}
+                                </Badge>
+                                <div>
+                                  <span className="text-sm font-medium">{task.title}</span>
+                                  <p className="text-xs text-gray-500">{task.assignedTo}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={getPriorityColor(task.priority)}>
+                                  {task.priority}
+                                </Badge>
+                                <span className="text-xs text-gray-500">Due: {task.dueDate}</span>
+                              </div>
+                            </div>
                           ))}
-                        </ul>
-                      </div>
-                      <Button className="w-full">Get Quote</Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </TabsContent>
+                        </div>
 
-          {/* Success Stories Tab */}
-          <TabsContent value="success" className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Client Success Stories</h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Real results from businesses we've helped transform
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {successStories.map((story, index) => (
-                <motion.div
-                  key={story.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  <Card className="h-full">
-                    <CardHeader>
-                      <div className="flex justify-between items-start mb-2">
-                        <CardTitle className="text-xl">{story.client}</CardTitle>
-                        <Badge variant="outline">{story.industry}</Badge>
+                        <div className="flex gap-2 mt-4">
+                          <Button variant="outline" size="sm">
+                            <MessageSquare className="w-4 h-4 mr-1" />
+                            Message Team
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Details
+                          </Button>
+                        </div>
                       </div>
-                      <CardDescription className="text-lg font-semibold text-orange-600">
-                        {story.result}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600">{story.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Contact Tab */}
-          <TabsContent value="contact" className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Start Your Project</h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Let's discuss how we can help your business grow
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-8">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                className="space-y-6"
-              >
-                <div>
-                  <Label htmlFor="company-name">Company Name</Label>
-                  <Input id="company-name" placeholder="Your company name" />
-                </div>
-                <div>
-                  <Label htmlFor="contact-name">Contact Name</Label>
-                  <Input id="contact-name" placeholder="Your name" />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="your@email.com" />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" placeholder="Your phone number" />
-                </div>
-                <div>
-                  <Label htmlFor="industry">Industry</Label>
-                  <select id="industry" className="w-full p-3 border border-gray-300 rounded-md">
-                    <option>Technology</option>
-                    <option>Healthcare</option>
-                    <option>Finance</option>
-                    <option>Education</option>
-                    <option>Retail</option>
-                    <option>Manufacturing</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                className="space-y-6"
-              >
-                <div>
-                  <Label htmlFor="services">Services Needed</Label>
-                  <div className="space-y-2 mt-2">
-                    {['Content Creation', 'Brand Development', 'Digital Marketing', 'Consulting Services'].map((service) => (
-                      <label key={service} className="flex items-center space-x-2">
-                        <input type="checkbox" className="rounded" />
-                        <span className="text-sm">{service}</span>
-                      </label>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Service Requests Tab */}
+            <TabsContent value="requests" className="space-y-6">
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="md:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Service Requests</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {serviceRequests.map((request) => (
+                          <div key={request.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-lg font-semibold">{request.title}</h3>
+                                <p className="text-gray-600">{request.category}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={getStatusColor(request.status)}>
+                                  {request.status}
+                                </Badge>
+                                <Badge className={getPriorityColor(request.priority)}>
+                                  {request.priority}
+                                </Badge>
+                              </div>
+                            </div>
+                            <p className="text-gray-700 mb-4">{request.description}</p>
+                            <div className="flex justify-between items-center">
+                              <div className="flex gap-4 text-sm text-gray-600">
+                                <span>Submitted: {new Date(request.submittedDate).toLocaleDateString()}</span>
+                                <span>Est. Cost: {request.estimatedCost}</span>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm">
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View Details
+                                </Button>
+                                <Button variant="outline" size="sm">
+                                  <MessageSquare className="w-4 h-4 mr-1" />
+                                  Message
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <div>
-                  <Label htmlFor="budget">Budget Range</Label>
-                  <select id="budget" className="w-full p-3 border border-gray-300 rounded-md">
-                    <option>$1,000 - $5,000</option>
-                    <option>$5,000 - $15,000</option>
-                    <option>$15,000 - $50,000</option>
-                    <option>$50,000+</option>
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="timeline">Project Timeline</Label>
-                  <select id="timeline" className="w-full p-3 border border-gray-300 rounded-md">
-                    <option>ASAP</option>
-                    <option>1-2 months</option>
-                    <option>3-6 months</option>
-                    <option>6+ months</option>
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="message">Project Details</Label>
-                  <Textarea 
-                    id="message" 
-                    placeholder="Tell us about your project and goals..."
-                    rows={4}
-                  />
-                </div>
-                <Button size="lg" className="w-full">
-                  Submit Request
-                </Button>
-              </motion.div>
-            </div>
-          </TabsContent>
-        </Tabs>
+
+                {/* New Request Form */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>New Service Request</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Request Title</Label>
+                      <Input 
+                        id="title"
+                        value={newRequest.title}
+                        onChange={(e) => setNewRequest({...newRequest, title: e.target.value})}
+                        placeholder="Enter request title"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Select value={newRequest.category} onValueChange={(value) => setNewRequest({...newRequest, category: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Design">Design</SelectItem>
+                          <SelectItem value="Marketing">Marketing</SelectItem>
+                          <SelectItem value="Development">Development</SelectItem>
+                          <SelectItem value="Production">Production</SelectItem>
+                          <SelectItem value="Consulting">Consulting</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="priority">Priority</Label>
+                      <Select value={newRequest.priority} onValueChange={(value) => setNewRequest({...newRequest, priority: value as any})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea 
+                        id="description"
+                        value={newRequest.description}
+                        onChange={(e) => setNewRequest({...newRequest, description: e.target.value})}
+                        placeholder="Describe your request..."
+                        rows={4}
+                      />
+                    </div>
+                    <Button onClick={handleSubmitRequest} className="w-full">
+                      <Send className="w-4 h-4 mr-2" />
+                      Submit Request
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Invoices Tab */}
+            <TabsContent value="invoices" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invoices</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {invoices.map((invoice) => (
+                      <div key={invoice.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-semibold">{invoice.projectTitle}</h3>
+                            <p className="text-gray-600">{invoice.description}</p>
+                          </div>
+                          <Badge className={getStatusColor(invoice.status)}>
+                            {invoice.status}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex gap-4 text-sm text-gray-600">
+                            <span>Issue Date: {invoice.issueDate}</span>
+                            <span>Due Date: {invoice.dueDate}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-xl font-bold">${invoice.amount.toLocaleString()}</span>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Download className="w-4 h-4 mr-1" />
+                                Download
+                              </Button>
+                              {invoice.status === 'sent' && (
+                                <Button size="sm">
+                                  Pay Now
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </div>
     </div>
   );

@@ -2,483 +2,567 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Users, Briefcase, Award, Send, CheckCircle } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { SecureForm } from '@/components/ui/secure-form'
-import { SecureBadge } from '@/components/ui/secure-badge'
-import { SecurityAlert } from '@/components/ui/security-alert'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { 
+  Building2, 
+  Rocket, 
+  Users, 
+  Home, 
+  Check, 
+  ArrowRight,
+  Star,
+  Zap,
+  Crown
+} from 'lucide-react'
+
+type UserType = 'startup' | 'company' | 'marketing_agency' | 'internal_office' | 'freelancer' | 'expert'
+
+interface Package {
+  id: string
+  name: string
+  price: number
+  features: string[]
+  popular?: boolean
+  icon: any
+}
+
+const packages: Record<string, Package[]> = {
+  startup: [
+    {
+      id: 'basic',
+      name: 'Basic',
+      price: 299,
+      features: ['Up to 5 team members', 'Basic consultation hours', 'Email support', 'Standard templates'],
+      icon: Star
+    },
+    {
+      id: 'growth',
+      name: 'Growth',
+      price: 599,
+      features: ['Up to 15 team members', 'Priority consultation', 'Phone support', 'Custom templates', 'Analytics dashboard'],
+      popular: true,
+      icon: Zap
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: 1299,
+      features: ['Unlimited team members', 'Dedicated consultant', '24/7 support', 'Custom integrations', 'White-label options'],
+      icon: Crown
+    }
+  ],
+  company: [
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: 499,
+      features: ['Up to 10 employees', 'Basic services', 'Email support', 'Monthly reports'],
+      icon: Star
+    },
+    {
+      id: 'professional',
+      name: 'Professional',
+      price: 999,
+      features: ['Up to 50 employees', 'Full service suite', 'Priority support', 'Weekly reports', 'Custom solutions'],
+      popular: true,
+      icon: Zap
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: 2499,
+      features: ['Unlimited employees', 'Dedicated team', '24/7 support', 'Custom development', 'API access'],
+      icon: Crown
+    }
+  ]
+}
 
 export default function JoinPage() {
-  const [securityAlert, setSecurityAlert] = useState<{
-    type: 'success' | 'warning' | 'error' | 'info' | 'security';
-    title?: string;
-    message: string;
-  } | null>(null)
+  const [userType, setUserType] = useState<UserType | null>(null)
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
+  const [step, setStep] = useState<'type' | 'package' | 'form'>('type')
+  const [formData, setFormData] = useState<any>({})
 
-  const handleFreelancerSubmit = async (formData: FormData, csrfToken: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setSecurityAlert({
-      type: 'success',
-      title: 'Application Submitted',
-      message: 'Thank you for your application! We will review your profile and get back to you within 5-7 business days.'
-    })
+  const userTypes = [
+    {
+      id: 'startup',
+      title: 'Startup',
+      description: 'Growing companies seeking guidance and resources',
+      icon: Rocket,
+      color: 'bg-blue-500'
+    },
+    {
+      id: 'company',
+      title: 'Company',
+      description: 'Established businesses looking for comprehensive solutions',
+      icon: Building2,
+      color: 'bg-green-500'
+    },
+    {
+      id: 'marketing_agency',
+      title: 'Marketing Agency',
+      description: 'Agencies seeking consultation and integration services',
+      icon: Users,
+      color: 'bg-purple-500'
+    },
+    {
+      id: 'internal_office',
+      title: 'Internal Office',
+      description: 'Request office space and internal services',
+      icon: Home,
+      color: 'bg-orange-500'
+    },
+    {
+      id: 'freelancer',
+      title: 'Freelancer',
+      description: 'Join our network of creative professionals',
+      icon: Users,
+      color: 'bg-pink-500'
+    },
+    {
+      id: 'expert',
+      title: 'Expert',
+      description: 'Share your expertise and consult with clients',
+      icon: Star,
+      color: 'bg-yellow-500'
+    }
+  ]
+
+  const handleUserTypeSelect = (type: UserType) => {
+    setUserType(type)
+    if (['startup', 'company'].includes(type)) {
+      setStep('package')
+    } else {
+      setStep('form')
+    }
   }
 
-  const handleExpertSubmit = async (formData: FormData, csrfToken: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setSecurityAlert({
-      type: 'success',
-      title: 'Application Submitted',
-      message: 'Thank you for your expert application! Our team will review your credentials and contact you within 3-5 business days.'
-    })
+  const handlePackageSelect = (pkgId: string) => {
+    setSelectedPackage(pkgId)
+    setStep('form')
   }
 
-  const handleSecurityError = (error: string) => {
-    setSecurityAlert({
-      type: 'error',
-      title: 'Security Error',
-      message: error
-    })
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle form submission based on user type
+    console.log('Form submitted:', { userType, selectedPackage, formData })
+    // Redirect to success page or dashboard
+  }
+
+  const renderUserTypeSelection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold mb-4">Join Beatrix Media Hub</h1>
+        <p className="text-xl text-gray-600">Choose your path to success</p>
+      </div>
+      
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {userTypes.map((type) => {
+          const Icon = type.icon
+          return (
+            <motion.div
+              key={type.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Card 
+                className="cursor-pointer hover:shadow-lg transition-all duration-300"
+                onClick={() => handleUserTypeSelect(type.id as UserType)}
+              >
+                <CardHeader className="text-center">
+                  <div className={`mx-auto mb-4 p-4 rounded-full ${type.color} w-fit`}>
+                    <Icon className="w-8 h-8 text-white" />
+                  </div>
+                  <CardTitle className="text-xl">{type.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 text-center">{type.description}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+
+  const renderPackageSelection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
+        <p className="text-lg text-gray-600">Select the perfect package for your needs</p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+        {packages[userType!]?.map((pkg) => {
+          const Icon = pkg.icon
+          return (
+            <motion.div
+              key={pkg.id}
+              whileHover={{ scale: 1.02 }}
+              className="relative"
+            >
+              {pkg.popular && (
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                  Most Popular
+                </Badge>
+              )}
+              <Card 
+                className={`cursor-pointer transition-all duration-300 ${
+                  pkg.popular ? 'ring-2 ring-blue-500' : ''
+                }`}
+                onClick={() => handlePackageSelect(pkg.id)}
+              >
+                <CardHeader className="text-center">
+                  <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full w-fit">
+                    <Icon className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <CardTitle className="text-xl">{pkg.name}</CardTitle>
+                  <div className="text-3xl font-bold">${pkg.price}<span className="text-sm text-gray-500">/year</span></div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {pkg.features.map((feature, index) => (
+                      <li key={index} className="flex items-center text-sm">
+                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+
+  const renderForm = () => {
+    const getFormFields = () => {
+      switch (userType) {
+        case 'startup':
+          return (
+            <>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input 
+                    id="companyName" 
+                    value={formData.companyName || ''}
+                    onChange={(e) => setFormData({...formData, companyName: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="contactPerson">Contact Person</Label>
+                  <Input 
+                    id="contactPerson" 
+                    value={formData.contactPerson || ''}
+                    onChange={(e) => setFormData({...formData, contactPerson: e.target.value})}
+                    required 
+                  />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="fieldOfWork">Field of Work</Label>
+                  <Input 
+                    id="fieldOfWork" 
+                    value={formData.fieldOfWork || ''}
+                    onChange={(e) => setFormData({...formData, fieldOfWork: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="website">Website (Optional)</Label>
+                  <Input 
+                    id="website" 
+                    type="url"
+                    value={formData.website || ''}
+                    onChange={(e) => setFormData({...formData, website: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input 
+                    id="phone" 
+                    type="tel"
+                    value={formData.phone || ''}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required 
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="pitch">Pitch or Goals</Label>
+                <Textarea 
+                  id="pitch" 
+                  rows={4}
+                  value={formData.pitch || ''}
+                  onChange={(e) => setFormData({...formData, pitch: e.target.value})}
+                  placeholder="Tell us about your startup and what you hope to achieve..."
+                  required 
+                />
+              </div>
+            </>
+          )
+        case 'company':
+          return (
+            <>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input 
+                    id="companyName" 
+                    value={formData.companyName || ''}
+                    onChange={(e) => setFormData({...formData, companyName: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="companySector">Company Sector</Label>
+                  <Select value={formData.companySector || ''} onValueChange={(value) => setFormData({...formData, companySector: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sector" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="technology">Technology</SelectItem>
+                      <SelectItem value="healthcare">Healthcare</SelectItem>
+                      <SelectItem value="finance">Finance</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="retail">Retail</SelectItem>
+                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="contactName">Contact Name</Label>
+                  <Input 
+                    id="contactName" 
+                    value={formData.contactName || ''}
+                    onChange={(e) => setFormData({...formData, contactName: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="employeeCount">Number of Employees</Label>
+                  <Select value={formData.employeeCount || ''} onValueChange={(value) => setFormData({...formData, employeeCount: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-10">1-10</SelectItem>
+                      <SelectItem value="11-50">11-50</SelectItem>
+                      <SelectItem value="51-200">51-200</SelectItem>
+                      <SelectItem value="201-1000">201-1000</SelectItem>
+                      <SelectItem value="1000+">1000+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="serviceNeeds">Service Needs</Label>
+                <Textarea 
+                  id="serviceNeeds" 
+                  rows={4}
+                  value={formData.serviceNeeds || ''}
+                  onChange={(e) => setFormData({...formData, serviceNeeds: e.target.value})}
+                  placeholder="Describe the services you're looking for..."
+                  required 
+                />
+              </div>
+            </>
+          )
+        case 'marketing_agency':
+          return (
+            <>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="agencyName">Agency Name</Label>
+                  <Input 
+                    id="agencyName" 
+                    value={formData.agencyName || ''}
+                    onChange={(e) => setFormData({...formData, agencyName: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="clientType">Type of Clients</Label>
+                  <Select value={formData.clientType || ''} onValueChange={(value) => setFormData({...formData, clientType: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select client type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="startups">Startups</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                      <SelectItem value="sme">SMEs</SelectItem>
+                      <SelectItem value="mixed">Mixed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="monthlyRequests">Expected Monthly Requests</Label>
+                  <Select value={formData.monthlyRequests || ''} onValueChange={(value) => setFormData({...formData, monthlyRequests: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-10">1-10</SelectItem>
+                      <SelectItem value="11-50">11-50</SelectItem>
+                      <SelectItem value="51-100">51-100</SelectItem>
+                      <SelectItem value="100+">100+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required 
+                  />
+                </div>
+              </div>
+            </>
+          )
+        case 'internal_office':
+          return (
+            <>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="teamSize">Team Size</Label>
+                  <Select value={formData.teamSize || ''} onValueChange={(value) => setFormData({...formData, teamSize: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select team size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-5">1-5 people</SelectItem>
+                      <SelectItem value="6-15">6-15 people</SelectItem>
+                      <SelectItem value="16-30">16-30 people</SelectItem>
+                      <SelectItem value="30+">30+ people</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="officeType">Office Type</Label>
+                  <Select value={formData.officeType || ''} onValueChange={(value) => setFormData({...formData, officeType: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select office type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="shared">Shared Space</SelectItem>
+                      <SelectItem value="private">Private Office</SelectItem>
+                      <SelectItem value="remote">Remote Support</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="preferredLocation">Preferred Location (Optional)</Label>
+                <Input 
+                  id="preferredLocation" 
+                  value={formData.preferredLocation || ''}
+                  onChange={(e) => setFormData({...formData, preferredLocation: e.target.value})}
+                  placeholder="City, Country"
+                />
+              </div>
+              <div>
+                <Label htmlFor="billingContact">Billing Contact</Label>
+                <Input 
+                  id="billingContact" 
+                  value={formData.billingContact || ''}
+                  onChange={(e) => setFormData({...formData, billingContact: e.target.value})}
+                  required 
+                />
+              </div>
+            </>
+          )
+        default:
+          return (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Form for {userType} coming soon...</p>
+            </div>
+          )
+      }
+    }
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-2xl mx-auto"
+      >
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold mb-4">Complete Your Registration</h2>
+          <p className="text-lg text-gray-600">Tell us more about yourself</p>
+        </div>
+
+        <Card>
+          <CardContent className="p-6">
+            <form onSubmit={handleFormSubmit} className="space-y-6">
+              {getFormFields()}
+              
+              <div className="flex gap-4 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setStep(selectedPackage ? 'package' : 'type')}
+                  className="flex-1"
+                >
+                  Back
+                </Button>
+                <Button type="submit" className="flex-1">
+                  Submit Application
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900/20 to-black">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Join Our Team
-          </h1>
-          <p className="text-xl text-white/70 max-w-3xl mx-auto">
-            Become part of our creative community. Whether you're a talented freelancer or an industry expert, 
-            we have opportunities for you to grow and succeed.
-          </p>
-        </motion.div>
-
-        {/* Security Alert */}
-        {securityAlert && (
-          <div className="mb-8">
-            <SecurityAlert
-              type={securityAlert.type}
-              title={securityAlert.title}
-              message={securityAlert.message}
-              onClose={() => setSecurityAlert(null)}
-              autoClose={securityAlert.type === 'success'}
-              autoCloseDelay={5000}
-            />
-          </div>
-        )}
-
-        {/* Application Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <Tabs defaultValue="freelancer" className="max-w-4xl mx-auto">
-            <TabsList className="grid w-full grid-cols-2 bg-white/5 backdrop-blur-sm border-white/10">
-              <TabsTrigger value="freelancer" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-                <Users className="mr-2 h-4 w-4" />
-                Freelancer
-              </TabsTrigger>
-              <TabsTrigger value="expert" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
-                <Award className="mr-2 h-4 w-4" />
-                Expert
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Freelancer Application */}
-            <TabsContent value="freelancer" className="mt-8">
-              <Card className="bg-white/5 backdrop-blur-sm border-white/10">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-2xl font-bold text-white">
-                        Freelancer Application
-                      </CardTitle>
-                      <CardDescription className="text-white/60">
-                        Join our network of talented freelancers and work on exciting projects
-                      </CardDescription>
-                    </div>
-                    <SecureBadge type="secure" size="sm">
-                      Protected
-                    </SecureBadge>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <SecureForm
-                    onSubmit={handleFreelancerSubmit}
-                    showSecurityBadge={false}
-                    onSecurityError={handleSecurityError}
-                  >
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="firstName" className="text-white">
-                            First Name *
-                          </Label>
-                          <Input
-                            id="firstName"
-                            name="firstName"
-                            placeholder="Your first name"
-                            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                            required
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="lastName" className="text-white">
-                            Last Name *
-                          </Label>
-                          <Input
-                            id="lastName"
-                            name="lastName"
-                            placeholder="Your last name"
-                            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-white">
-                          Email Address *
-                        </Label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          placeholder="your.email@example.com"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-white">
-                          Phone Number
-                        </Label>
-                        <Input
-                          id="phone"
-                          name="phone"
-                          placeholder="+1 (555) 123-4567"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="skills" className="text-white">
-                          Skills & Expertise *
-                        </Label>
-                        <Input
-                          id="skills"
-                          name="skills"
-                          placeholder="e.g., Graphic Design, Video Editing, Web Development"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="experience" className="text-white">
-                          Years of Experience *
-                        </Label>
-                        <Input
-                          id="experience"
-                          name="experience"
-                          type="number"
-                          min="0"
-                          max="50"
-                          placeholder="5"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="portfolio" className="text-white">
-                          Portfolio URL
-                        </Label>
-                        <Input
-                          id="portfolio"
-                          name="portfolio"
-                          type="url"
-                          placeholder="https://your-portfolio.com"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="motivation" className="text-white">
-                          Why do you want to join? *
-                        </Label>
-                        <Textarea
-                          id="motivation"
-                          name="motivation"
-                          placeholder="Tell us about your motivation and what you hope to achieve..."
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500 min-h-[120px]"
-                          required
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 text-lg font-semibold"
-                      >
-                        <Send className="mr-2 h-5 w-5" />
-                        Submit Application
-                      </Button>
-                    </div>
-                  </SecureForm>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Expert Application */}
-            <TabsContent value="expert" className="mt-8">
-              <Card className="bg-white/5 backdrop-blur-sm border-white/10">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-2xl font-bold text-white">
-                        Expert Application
-                      </CardTitle>
-                      <CardDescription className="text-white/60">
-                        Join our network of industry experts and thought leaders
-                      </CardDescription>
-                    </div>
-                    <SecureBadge type="secure" size="sm">
-                      Protected
-                    </SecureBadge>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <SecureForm
-                    onSubmit={handleExpertSubmit}
-                    showSecurityBadge={false}
-                    onSecurityError={handleSecurityError}
-                  >
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="expertFirstName" className="text-white">
-                            First Name *
-                          </Label>
-                          <Input
-                            id="expertFirstName"
-                            name="firstName"
-                            placeholder="Your first name"
-                            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                            required
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="expertLastName" className="text-white">
-                            Last Name *
-                          </Label>
-                          <Input
-                            id="expertLastName"
-                            name="lastName"
-                            placeholder="Your last name"
-                            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="expertEmail" className="text-white">
-                          Email Address *
-                        </Label>
-                        <Input
-                          id="expertEmail"
-                          name="email"
-                          type="email"
-                          placeholder="your.email@example.com"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="expertTitle" className="text-white">
-                          Professional Title *
-                        </Label>
-                        <Input
-                          id="expertTitle"
-                          name="title"
-                          placeholder="e.g., Senior Creative Director, Industry Consultant"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="expertCompany" className="text-white">
-                          Current Company/Organization
-                        </Label>
-                        <Input
-                          id="expertCompany"
-                          name="company"
-                          placeholder="Your current company or organization"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="expertExpertise" className="text-white">
-                          Areas of Expertise *
-                        </Label>
-                        <Input
-                          id="expertExpertise"
-                          name="expertise"
-                          placeholder="e.g., Brand Strategy, Digital Marketing, Creative Direction"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="expertExperience" className="text-white">
-                          Years of Industry Experience *
-                        </Label>
-                        <Input
-                          id="expertExperience"
-                          name="experience"
-                          type="number"
-                          min="0"
-                          max="50"
-                          placeholder="10"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="expertLinkedIn" className="text-white">
-                          LinkedIn Profile
-                        </Label>
-                        <Input
-                          id="expertLinkedIn"
-                          name="linkedin"
-                          type="url"
-                          placeholder="https://linkedin.com/in/yourprofile"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="expertBio" className="text-white">
-                          Professional Bio *
-                        </Label>
-                        <Textarea
-                          id="expertBio"
-                          name="bio"
-                          placeholder="Tell us about your professional background, achievements, and expertise..."
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500 min-h-[120px]"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="expertValue" className="text-white">
-                          How can you add value to our community? *
-                        </Label>
-                        <Textarea
-                          id="expertValue"
-                          name="value"
-                          placeholder="Describe how your expertise can benefit our clients and community..."
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-purple-500 min-h-[120px]"
-                          required
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-3 text-lg font-semibold"
-                      >
-                        <Send className="mr-2 h-5 w-5" />
-                        Submit Expert Application
-                      </Button>
-                    </div>
-                  </SecureForm>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-
-        {/* Benefits Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="mt-20"
-        >
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Why Join BEATRIX?
-            </h2>
-            <p className="text-xl text-white/70">
-              Discover the benefits of being part of our creative community
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-center">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Briefcase className="h-8 w-8 text-purple-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">Exciting Projects</h3>
-                <p className="text-white/60">
-                  Work on diverse, high-profile projects with leading brands and innovative startups.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-center">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Award className="h-8 w-8 text-blue-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">Professional Growth</h3>
-                <p className="text-white/60">
-                  Access to training, mentorship, and opportunities to expand your skills and network.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-center">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-8 w-8 text-green-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">Flexible Work</h3>
-                <p className="text-white/60">
-                  Choose your projects, set your rates, and work on your own schedule from anywhere.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </motion.section>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        {step === 'type' && renderUserTypeSelection()}
+        {step === 'package' && renderPackageSelection()}
+        {step === 'form' && renderForm()}
       </div>
     </div>
   )

@@ -32,6 +32,7 @@ interface AuthState {
   logout: () => void;
   setUser: (user: User) => void;
   updateUser: (updates: Partial<User>) => void;
+  directAdminAccess: () => void;
 }
 
 // Mock user data - replace with real API calls
@@ -50,8 +51,8 @@ const mockUsers = [
   },
   {
     id: 'freelancer-001',
-    email: 'sara@beatrixhub.com',
-    password: 'sara123',
+    email: 'freelancer@beatrixhub.com',
+    password: 'freelance',
     name: 'Sara Ahmed',
     role: 'freelancer' as UserRole,
     avatar: '/avatars/sara.jpg',
@@ -62,7 +63,7 @@ const mockUsers = [
   },
   {
     id: 'client-001',
-    email: 'mohamed@company.com',
+    email: 'client@beatrixhub.com',
     password: 'client123',
     name: 'Mohamed Ali',
     role: 'client' as UserRole,
@@ -74,8 +75,57 @@ const mockUsers = [
     lastLogin: '2024-12-19T07:30:00Z',
   },
   {
+    id: 'expert-001',
+    email: 'expert@beatrixhub.com',
+    password: 'expert123',
+    name: 'Dr. Karim El-Sayed',
+    role: 'expert' as UserRole,
+    avatar: '/avatars/karim.jpg',
+    internalEmail: 'karim@experts.beatrixhub.com',
+    isActive: true,
+    createdAt: '2024-07-01T00:00:00Z',
+    lastLogin: '2024-12-19T03:30:00Z',
+  },
+  {
+    id: 'supervisor-001',
+    email: 'supervisor@beatrixhub.com',
+    password: 'supervisor123',
+    name: 'Ahmed Hassan',
+    role: 'supervisor' as UserRole,
+    avatar: '/avatars/ahmed.jpg',
+    internalEmail: 'ahmed@supervisors.beatrixhub.com',
+    isActive: true,
+    createdAt: '2024-01-15T00:00:00Z',
+    lastLogin: '2024-12-19T09:15:00Z',
+  },
+  {
+    id: 'producer-001',
+    email: 'producer@beatrixhub.com',
+    password: 'producer123',
+    name: 'Fatima Zahra',
+    role: 'producer' as UserRole,
+    avatar: '/avatars/fatima.jpg',
+    internalEmail: 'fatima@producers.beatrixhub.com',
+    isActive: true,
+    createdAt: '2024-04-01T00:00:00Z',
+    lastLogin: '2024-12-19T06:20:00Z',
+  },
+  {
+    id: 'distributor-001',
+    email: 'distributor@beatrixhub.com',
+    password: 'distributor123',
+    name: 'Omar Khalil',
+    role: 'distributor' as UserRole,
+    company: 'Media Distribution Co.',
+    avatar: '/avatars/omar.jpg',
+    internalEmail: 'omar@distributors.beatrixhub.com',
+    isActive: true,
+    createdAt: '2024-05-01T00:00:00Z',
+    lastLogin: '2024-12-19T05:10:00Z',
+  },
+  {
     id: 'startup-001',
-    email: 'layla@startup.com',
+    email: 'startup@beatrixhub.com',
     password: 'startup123',
     name: 'Layla Mansour',
     role: 'startup' as UserRole,
@@ -124,6 +174,9 @@ export const useAuth = create<AuthState>()(
           user: null,
           isAuthenticated: false,
         });
+        // Clear localStorage
+        localStorage.removeItem('adminBypass');
+        localStorage.removeItem('adminUser');
       },
 
       setUser: (user: User) => {
@@ -141,13 +194,38 @@ export const useAuth = create<AuthState>()(
           });
         }
       },
+
+      directAdminAccess: () => {
+        const adminUser: User = {
+          id: 'admin-1',
+          email: 'admin@beatrixhub.com',
+          name: 'Super Admin',
+          role: 'super_admin',
+          avatar: '/avatars/admin.jpg',
+          internalEmail: 'admin@admin.beatrixhub.com',
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          lastLogin: new Date().toISOString(),
+        };
+        
+        set({
+          user: adminUser,
+          isAuthenticated: true,
+        });
+        
+        // Store in localStorage as backup
+        localStorage.setItem('adminBypass', 'true');
+        localStorage.setItem('adminUser', JSON.stringify(adminUser));
+      },
     }),
     {
       name: 'beatrix-auth',
+      version: 1,
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      migrate: (persistedState) => persistedState,
     }
   )
 );
@@ -198,11 +276,14 @@ export const hasPermission = (userRole: UserRole, requiredRole: UserRole | UserR
   const userLevel = roleHierarchy[userRole];
   const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
   
-  return requiredRoles.some(role => userLevel >= roleHierarchy[role]);
+  return requiredRoles.some(role => {
+    const requiredLevel = roleHierarchy[role];
+    return userLevel >= requiredLevel;
+  });
 };
 
 export const getRoleDisplayName = (role: UserRole): string => {
-  const displayNames: Record<UserRole, string> = {
+  const roleNames: Record<UserRole, string> = {
     super_admin: 'Super Admin',
     supervisor: 'Supervisor',
     freelancer: 'Freelancer',
@@ -212,56 +293,48 @@ export const getRoleDisplayName = (role: UserRole): string => {
     startup: 'Startup',
     expert: 'Expert',
   };
-  return displayNames[role];
+  return roleNames[role] || role;
 };
 
 export const getRoleColor = (role: UserRole): string => {
-  const colors: Record<UserRole, string> = {
-    super_admin: 'bg-red-500',
-    supervisor: 'bg-purple-500',
-    freelancer: 'bg-blue-500',
-    client: 'bg-green-500',
-    producer: 'bg-orange-500',
-    distributor: 'bg-yellow-500',
-    startup: 'bg-pink-500',
-    expert: 'bg-indigo-500',
+  const roleColors: Record<UserRole, string> = {
+    super_admin: 'bg-red-100 text-red-800',
+    supervisor: 'bg-purple-100 text-purple-800',
+    freelancer: 'bg-blue-100 text-blue-800',
+    client: 'bg-green-100 text-green-800',
+    producer: 'bg-orange-100 text-orange-800',
+    distributor: 'bg-indigo-100 text-indigo-800',
+    startup: 'bg-pink-100 text-pink-800',
+    expert: 'bg-yellow-100 text-yellow-800',
   };
-  return colors[role];
+  return roleColors[role] || 'bg-gray-100 text-gray-800';
 };
 
-// Platform access control
 export const canAccessPlatform = (userRole: UserRole, platform: string): boolean => {
-  const platformAccess: Record<UserRole, string[]> = {
-    super_admin: ['admin', 'freelancers', 'clients', 'startups', 'producers', 'distributors', 'experts', 'supervisors'],
-    supervisor: ['admin', 'freelancers', 'clients', 'startups', 'producers', 'distributors', 'experts'],
-    freelancer: ['freelancers'],
-    client: ['clients'],
-    startup: ['startups'],
-    producer: ['producers'],
-    distributor: ['distributors'],
-    expert: ['experts'],
+  const platformAccess: Record<string, UserRole[]> = {
+    freelancers: ['super_admin', 'supervisor', 'freelancer'],
+    clients: ['super_admin', 'supervisor', 'client'],
+    experts: ['super_admin', 'supervisor', 'expert'],
+    producers: ['super_admin', 'supervisor', 'producer'],
+    distributors: ['super_admin', 'supervisor', 'distributor'],
+    startups: ['super_admin', 'supervisor', 'startup'],
+    admin: ['super_admin'],
+    supervisors: ['super_admin', 'supervisor'],
   };
-
-  return platformAccess[userRole]?.includes(platform) || false;
+  
+  // Super admin can access all platforms
+  if (userRole === 'super_admin') {
+    return true;
+  }
+  
+  return platformAccess[platform]?.includes(userRole) || false;
 };
 
-// Check if user can access admin area
 export const canAccessAdmin = (userRole: UserRole): boolean => {
   return hasPermission(userRole, ['super_admin', 'supervisor']);
 };
 
-// Get user's accessible platforms
 export const getUserPlatforms = (userRole: UserRole): string[] => {
-  const platformAccess: Record<UserRole, string[]> = {
-    super_admin: ['admin', 'freelancers', 'clients', 'startups', 'producers', 'distributors', 'experts', 'supervisors'],
-    supervisor: ['admin', 'freelancers', 'clients', 'startups', 'producers', 'distributors', 'experts'],
-    freelancer: ['freelancers'],
-    client: ['clients'],
-    startup: ['startups'],
-    producer: ['producers'],
-    distributor: ['distributors'],
-    expert: ['experts'],
-  };
-
-  return platformAccess[userRole] || [];
+  const allPlatforms = ['freelancers', 'clients', 'experts', 'producers', 'distributors', 'startups'];
+  return allPlatforms.filter(platform => canAccessPlatform(userRole, platform));
 }; 

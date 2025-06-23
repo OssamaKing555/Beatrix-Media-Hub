@@ -24,12 +24,37 @@ import {
   Clock3
 } from 'lucide-react';
 
+interface Expert {
+  id: number;
+  name: string;
+  specialty: string;
+  rating: number;
+  reviews: number;
+  hourlyRate: number;
+  availability: string;
+  image: string;
+  description: string;
+  services: string[];
+  languages: string[];
+  experience: string;
+}
+
+interface ConsultationType {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  price: string;
+  icon: React.ElementType;
+  features: string[];
+}
+
 export default function ConsultationPlatform() {
   const [activeTab, setActiveTab] = useState('book');
-  const [selectedExpert, setSelectedExpert] = useState(null);
-  const [selectedService, setSelectedService] = useState(null);
+  const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
+  const [selectedService, setSelectedService] = useState<ConsultationType | null>(null);
 
-  const experts = [
+  const experts: Expert[] = [
     {
       id: 1,
       name: 'Dr. Sarah Johnson',
@@ -74,7 +99,7 @@ export default function ConsultationPlatform() {
     }
   ];
 
-  const consultationTypes = [
+  const consultationTypes: ConsultationType[] = [
     {
       id: 'video',
       title: 'Video Consultation',

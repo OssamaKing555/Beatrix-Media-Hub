@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, Shield, Loader2 } from 'lucide-react'
-import { useAuth } from '@/lib/auth'
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, Shield, Loader2, AlertCircle, CheckCircle, Info, Users, Building2, Star, Rocket } from 'lucide-react'
+import { useAuth, getCurrentUser } from '@/lib/auth'
 import { useCSRF } from '@/lib/hooks/useCSRF'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { SecureBadge } from '@/components/ui/secure-badge'
 import { SecurityAlert } from '@/components/ui/security-alert'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -24,10 +26,33 @@ export default function LoginPage() {
     title?: string;
     message: string;
   } | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [showDemoInfo, setShowDemoInfo] = useState(false)
+  const [loginSuccess, setLoginSuccess] = useState(false)
   
   const router = useRouter()
-  const { login, isLoading } = useAuth()
+  const { login, isLoading: authLoading, user, isAuthenticated } = useAuth()
   const { csrfToken, isLoading: csrfLoading, error: csrfError, isTokenValid } = useCSRF()
+
+  // Handle redirect after successful login
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('Auth state changed:', { user, isAuthenticated });
+      
+      // Wait for Zustand to hydrate and then redirect
+      const redirectTimer = setTimeout(() => {
+        if (user.role === 'super_admin') {
+          console.log('Redirecting super admin to /admin');
+          router.push('/admin');
+        } else {
+          console.log('Redirecting user to /platforms');
+          router.push('/platforms');
+        }
+      }, 1000);
+      
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [isAuthenticated, user, router]);
 
   // Check if form is valid (email and password filled)
   const isFormValid = email.trim() && password.trim()
@@ -38,12 +63,49 @@ export default function LoginPage() {
   // Development mode bypass for CSRF
   const isDevelopment = process.env.NODE_ENV === 'development'
 
+  const demoAccounts = [
+    {
+      role: 'Super Admin',
+      email: 'admin@beatrixhub.com',
+      password: 'admin123',
+      description: 'Full platform access and management',
+      icon: Users,
+      color: 'bg-red-500'
+    },
+    {
+      role: 'Freelancer',
+      email: 'freelancer@beatrixhub.com',
+      password: 'freelance',
+      description: 'Job opportunities and project management',
+      icon: Star,
+      color: 'bg-blue-500'
+    },
+    {
+      role: 'Client',
+      email: 'client@beatrixhub.com',
+      password: 'client123',
+      description: 'Project tracking and service requests',
+      icon: Building2,
+      color: 'bg-green-500'
+    },
+    {
+      role: 'Expert',
+      email: 'expert@beatrixhub.com',
+      password: 'expert123',
+      description: 'Consultation management and services',
+      icon: Rocket,
+      color: 'bg-yellow-500'
+    }
+  ]
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setIsLoading(true)
 
     if (!email || !password) {
       setError('Please fill in all fields')
+      setIsLoading(false)
       return
     }
 
@@ -55,6 +117,7 @@ export default function LoginPage() {
           title: 'Security Check Loading',
           message: 'Security token is still loading. Please wait a moment and try again.'
         })
+        setIsLoading(false)
         return
       } else {
         setSecurityAlert({
@@ -62,46 +125,40 @@ export default function LoginPage() {
           title: 'Security Error',
           message: 'Invalid security token. Please refresh the page and try again.'
         })
+        setIsLoading(false)
         return
       }
     }
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(isDevelopment || csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok && data.success) {
-        // Update auth state
-        await login(email, password)
-        
+      const success = await login(email, password)
+      if (success) {
         setSecurityAlert({
           type: 'success',
           title: 'Login Successful',
           message: 'Welcome back! Redirecting to your dashboard...'
         })
         
+        // Wait longer for state to persist and use the hook state
         setTimeout(() => {
-          router.push('/platforms')
-        }, 1500)
+          const currentUser = getCurrentUser()
+          console.log('Redirecting with user:', currentUser)
+          if (currentUser?.role === 'super_admin') {
+            router.push('/admin')
+          } else {
+            router.push('/platforms')
+          }
+        }, 2000)
       } else {
-        setError(data.error || 'Login failed')
+        setError('Invalid email or password. Please try again.')
         
-        if (data.error?.includes('locked')) {
+        if (error?.includes('locked')) {
           setSecurityAlert({
             type: 'warning',
             title: 'Account Temporarily Locked',
             message: 'Too many failed attempts. Please try again later.'
           })
-        } else if (data.error?.includes('rate limit')) {
+        } else if (error?.includes('rate limit')) {
           setSecurityAlert({
             type: 'warning',
             title: 'Rate Limit Exceeded',
@@ -110,13 +167,21 @@ export default function LoginPage() {
         }
       }
     } catch (err) {
-      setError('Network error. Please try again.')
+      setError('An error occurred during login. Please try again.')
       setSecurityAlert({
         type: 'error',
         title: 'Connection Error',
         message: 'Unable to connect to the server. Please check your internet connection.'
       })
+    } finally {
+      setIsLoading(false)
     }
+  }
+
+  const fillDemoAccount = (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail)
+    setPassword(demoPassword)
+    setError('')
   }
 
   return (
@@ -294,6 +359,69 @@ export default function LoginPage() {
                 )}
               </form>
 
+              {/* Demo Accounts Section */}
+              <div className="mt-6 pt-6 border-t">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-gray-900">Demo Accounts</h3>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDemoInfo(!showDemoInfo)}
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <Info className="w-4 h-4 mr-1" />
+                    {showDemoInfo ? 'Hide' : 'Show'} Info
+                  </Button>
+                </div>
+
+                {showDemoInfo && (
+                  <Alert className="mb-4">
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      Use these demo accounts to explore different user roles and features.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="space-y-3">
+                  {demoAccounts.map((account, index) => {
+                    const Icon = account.icon
+                    return (
+                      <motion.div
+                        key={account.role}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => fillDemoAccount(account.email, account.password)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-full ${account.color}`}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium text-sm">{account.role}</h4>
+                              <Badge variant="outline" className="text-xs">
+                                Demo
+                              </Badge>
+                            </div>
+                            {showDemoInfo && (
+                              <p className="text-xs text-gray-600 mt-1">{account.description}</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">{account.email}</p>
+                            <p className="text-xs text-gray-400">Click to fill</p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </div>
+
               <div className="mt-6 text-center">
                 <p className="text-white/60 text-sm">
                   Don't have an account?{' '}
@@ -301,25 +429,6 @@ export default function LoginPage() {
                     Join our platform
                   </Link>
                 </p>
-              </div>
-
-              {/* Demo Credentials */}
-              <div className="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
-                <h4 className="text-white font-semibold mb-3">Demo Accounts</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="text-white/60">
-                    <strong>Super Admin:</strong> admin@beatrixhub.com / admin123
-                  </div>
-                  <div className="text-white/60">
-                    <strong>Freelancer:</strong> sara@beatrixhub.com / sara123
-                  </div>
-                  <div className="text-white/60">
-                    <strong>Client:</strong> mohamed@company.com / client123
-                  </div>
-                  <div className="text-white/60">
-                    <strong>Startup:</strong> layla@startup.com / startup123
-                  </div>
-                </div>
               </div>
 
               {/* Security Info */}

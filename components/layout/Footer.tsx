@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import siteConfig from '@/data/siteConfig.json'
+import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -12,33 +12,24 @@ export default function Footer() {
             <p className="text-gray-400 mb-4 max-w-md">
               We are a forward-thinking creative agency that specializes in digital innovation, 
               brand development, and multimedia production. We help brands create meaningful 
-              connections with their audiences through cutting-edge technology and exceptional design.
+              connections with their audiences through cutting-edge technology and creative excellence.
             </p>
             <div className="flex space-x-4">
-              <a
-                href={siteConfig.contact.social.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                Instagram
-              </a>
-              <a
-                href={siteConfig.contact.social.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                LinkedIn
-              </a>
-              <a
-                href={siteConfig.contact.social.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                Facebook
-              </a>
+              <Link href="https://facebook.com/beatrixhub" className="text-gray-400 hover:text-white transition-colors">
+                <Facebook size={20} />
+              </Link>
+              <Link href="https://twitter.com/beatrixhub" className="text-gray-400 hover:text-white transition-colors">
+                <Twitter size={20} />
+              </Link>
+              <Link href="https://instagram.com/beatrixhub" className="text-gray-400 hover:text-white transition-colors">
+                <Instagram size={20} />
+              </Link>
+              <Link href="https://linkedin.com/company/beatrixhub" className="text-gray-400 hover:text-white transition-colors">
+                <Linkedin size={20} />
+              </Link>
+              <Link href="https://youtube.com/beatrixhub" className="text-gray-400 hover:text-white transition-colors">
+                <Youtube size={20} />
+              </Link>
             </div>
           </div>
 
@@ -47,23 +38,28 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
                 <Link href="/services" className="text-gray-400 hover:text-white transition-colors">
                   Services
                 </Link>
               </li>
               <li>
-                <Link href="/work" className="text-gray-400 hover:text-white transition-colors">
-                  Our Work
+                <Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors">
+                  Portfolio
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
-                  Contact
+                <Link href="/consulting" className="text-gray-400 hover:text-white transition-colors">
+                  Consulting
+                </Link>
+              </li>
+              <li>
+                <Link href="/platforms" className="text-gray-400 hover:text-white transition-colors">
+                  Platforms
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
+                  About
                 </Link>
               </li>
             </ul>
@@ -73,27 +69,15 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Contact</h4>
             <div className="space-y-2 text-gray-400">
-              <p>{siteConfig.contact.email}</p>
-              <p>{siteConfig.contact.phone}</p>
-              <p>{siteConfig.contact.address}</p>
-              <p className="text-sm">Mon-Fri: 9AM-6PM EST</p>
+              <p>hello@beatrixhub.com</p>
+              <p>+20 2 1234 5678</p>
+              <p>Cairo, Egypt</p>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} BEATRIX MEDIA HUB. All rights reserved.
-          </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">
-              Terms of Service
-            </Link>
-          </div>
+        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <p>&copy; 2024 BEATRIX MEDIA HUB. All rights reserved.</p>
         </div>
       </div>
     </footer>
