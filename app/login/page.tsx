@@ -16,6 +16,12 @@ import { SecurityAlert } from '@/components/ui/security-alert'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
+// Utility to check for a cookie by name
+function hasCookie(name: string): boolean {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.split(';').some((c) => c.trim().startsWith(name + '='));
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -138,17 +144,23 @@ export default function LoginPage() {
           title: 'Login Successful',
           message: 'Welcome back! Redirecting to your dashboard...'
         })
-        
-        // Wait longer for state to persist and use the hook state
-        setTimeout(() => {
-          const currentUser = getCurrentUser()
-          console.log('Redirecting with user:', currentUser)
-          if (currentUser?.role === 'super_admin') {
-            router.push('/admin')
-          } else {
-            router.push('/platforms')
+        // Wait for the auth-token cookie to be set before redirecting
+        const waitForToken = async () => {
+          let attempts = 0;
+          while (!hasCookie('auth-token') && attempts < 30) { // wait up to ~3 seconds
+            await new Promise(res => setTimeout(res, 100));
+            attempts++;
           }
-        }, 2000)
+        };
+        await waitForToken();
+        // Now redirect
+        const currentUser = getCurrentUser()
+        console.log('Redirecting with user:', currentUser)
+        if (currentUser?.role === 'super_admin') {
+          router.push('/admin')
+        } else {
+          router.push('/platforms')
+        }
       } else {
         setError('Invalid email or password. Please try again.')
         
