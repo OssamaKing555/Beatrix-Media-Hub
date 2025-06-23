@@ -45,6 +45,21 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  plan?: string;
+  permissions?: string[];
+  subscriptionStart?: string;
+  subscriptionEnd?: string;
+  isActive: boolean;
+  createdAt: string;
+  lastLogin: string;
+  updatedAt?: string;
+}
+
 interface UserFormData {
   name: string;
   email: string;
@@ -78,11 +93,18 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   
   // Add users state management
-  const [users, setUsers] = useState(() => {
+  const [users, setUsers] = useState<User[]>(() => {
     // Load users from localStorage or use default data
-    const savedUsers = localStorage.getItem('adminUsers');
-    if (savedUsers) {
-      return JSON.parse(savedUsers);
+    if (typeof window !== 'undefined') {
+        const savedUsers = localStorage.getItem('adminUsers');
+        if (savedUsers) {
+            try {
+                return JSON.parse(savedUsers);
+            } catch (e) {
+                console.error("Failed to parse users from localStorage", e);
+                return getUsers();
+            }
+        }
     }
     return getUsers(); // Default users from data file
   });
